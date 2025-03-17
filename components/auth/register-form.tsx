@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 
 export function RegisterForm() {
   const [name, setName] = useState("");
@@ -9,10 +11,13 @@ export function RegisterForm() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
     // Basic validation
     if (password !== confirmPassword) {
@@ -20,25 +25,45 @@ export function RegisterForm() {
       return;
     }
 
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters");
+      return;
+    }
+
     setIsLoading(true);
 
-    // Here you would implement your actual registration logic
-    // For example, with Supabase:
-    // const { data, error } = await supabase.auth.signUp({
-    //   email,
-    //   password,
-    //   options: {
-    //     data: {
-    //       name,
-    //     }
-    //   }
-    // });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          },
+          emailRedirectTo: `${window.location.origin}/auth/callback`,
+        }
+      });
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+      if (error) {
+        throw error;
+      }
 
-    setIsLoading(false);
-    // Redirect or show success message
+      if (data.user && data.user.identities && data.user.identities.length === 0) {
+        setError("This email is already registered");
+        return;
+      }
+
+      setSuccess("Registration successful! Please check your email to confirm your account.");
+      
+      // Optional: Auto-redirect after a delay
+      // setTimeout(() => {
+      //   router.push("/dashboard");
+      // }, 3000);
+    } catch (error: any) {
+      setError(error.message || "Failed to register");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,6 +71,12 @@ export function RegisterForm() {
       {error && (
         <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-md text-sm">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="p-3 bg-green-50 border border-green-200 text-green-700 rounded-md text-sm">
+          {success}
         </div>
       )}
 
@@ -72,7 +103,7 @@ export function RegisterForm() {
           htmlFor="email"
           className="block text-sm font-medium text-gray-700 mb-1"
         >
-          Email
+          Email Address
         </label>
         <input
           id="email"
@@ -81,7 +112,7 @@ export function RegisterForm() {
           onChange={(e) => setEmail(e.target.value)}
           required
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-          placeholder="your@email.com"
+          placeholder="you@example.com"
         />
       </div>
 
@@ -121,66 +152,24 @@ export function RegisterForm() {
         />
       </div>
 
-      <div className="flex items-center">
-        <input
-          id="terms"
-          name="terms"
-          type="checkbox"
-          required
-          className="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded"
-        />
-        <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-          I agree to the{" "}
-          <a href="/terms" className="text-purple-600 hover:text-purple-500">
-            Terms of Service
-          </a>{" "}
-          and{" "}
-          <a href="/privacy" className="text-purple-600 hover:text-purple-500">
-            Privacy Policy
-          </a>
-        </label>
-      </div>
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full py-2 px-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-md hover:shadow-lg transition-shadow focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-70"
+      >
+        {isLoading ? "Creating Account..." : "Create Account"}
+      </button>
 
-      <div>
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200 flex justify-center items-center"
-        >
-          {isLoading ? (
-            <svg
-              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
-          ) : null}
-          {isLoading ? "Creating account..." : "Create account"}
-        </button>
-      </div>
-
-      <p className="text-sm text-center text-gray-600 mt-6">
-        Already have an account?{" "}
-        <button
-          type="button"
-          className="text-purple-600 hover:text-purple-500 font-medium"
-        >
-          Sign in
-        </button>
+      <p className="text-xs text-gray-500 mt-4">
+        By creating an account, you agree to our{" "}
+        <a href="/terms" className="text-purple-600 hover:text-purple-800">
+          Terms of Service
+        </a>{" "}
+        and{" "}
+        <a href="/privacy" className="text-purple-600 hover:text-purple-800">
+          Privacy Policy
+        </a>
+        .
       </p>
     </form>
   );
