@@ -74,19 +74,22 @@ export function FeaturesSection({
       const description = panel.querySelector(".feature-description");
       const image = panel.querySelector(".feature-image");
       const imageWrapper = panel.querySelector(".image-wrapper");
+      const hoverInstruction = panel.querySelector(".hover-instruction");
 
       // Initial state
       gsap.set([title, description], { opacity: 0, y: 50 });
       gsap.set(image, { opacity: 0, scale: 0.8 });
+      gsap.set(hoverInstruction, { opacity: 0, y: 20 });
 
       // Animation timeline
       tl.to(title, { opacity: 1, y: 0, duration: 0.3 })
         .to(description, { opacity: 1, y: 0, duration: 0.3 }, "-=0.1")
         .to(image, { opacity: 1, scale: 1, duration: 0.4 }, "-=0.2")
         .to(imageWrapper, { y: -20, duration: 0.3 }, "-=0.2")
+        .to(hoverInstruction, { opacity: 0.8, y: 0, duration: 0.3 }, "-=0.1")
         .to({}, { duration: 0.5 }) // Pause at the end
         .to(
-          [title, description, image],
+          [title, description, image, hoverInstruction],
           {
             opacity: 0,
             y: -50,
@@ -202,7 +205,7 @@ export function FeaturesSection({
                 </div>
 
                 {/* Hover instruction text - moved below the image */}
-                <div className="text-center mt-4 opacity-80 group-hover:opacity-0 transition-opacity duration-300 hidden md:block">
+                <div className="hover-instruction text-center mt-4 opacity-0 group-hover:opacity-0 transition-opacity duration-300 hidden md:block">
                   <p className="text-gray-800 text-sm font-medium px-4 py-2 bg-yellow-100 border border-yellow-300 inline-block rounded-full shadow-sm">
                     ✨ Hover over image to see it colored ✨
                   </p>
