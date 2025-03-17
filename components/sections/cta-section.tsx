@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export function CTASection() {
   const textVariants = {
@@ -39,21 +40,23 @@ export function CTASection() {
             create custom coloring pages that kids absolutely love!
           </motion.p>
 
-          <motion.button
-            initial={{ opacity: 0, scale: 0.8 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{
-              duration: 0.6,
-              delay: 0.3,
-              type: "spring",
-              stiffness: 200,
-            }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-8 py-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-          >
-            Get Started for Free
-          </motion.button>
+          <Link href="/auth">
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.6,
+                delay: 0.3,
+                type: "spring",
+                stiffness: 200,
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white font-bold text-lg shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
+            >
+              Get Started for Free
+            </motion.button>
+          </Link>
         </motion.div>
       </div>
     </section>

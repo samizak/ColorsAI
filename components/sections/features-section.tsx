@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
@@ -225,9 +226,9 @@ export function FeaturesSection({
             Join thousands of parents and teachers who are using our platform to
             create custom coloring pages that kids absolutely love!
           </p>
-          <button className="px-8 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+          <Link href="/auth" className="px-8 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer inline-block">
             Start Creating
-          </button>
+          </Link>
         </div>
       </div>
     </div>

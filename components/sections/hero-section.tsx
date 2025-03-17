@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { ElegantShape } from "@/components/ui/elegant-shape";
 import { FloatingCrayon } from "@/components/ui/floating-crayon";
 import { ScrollIndicator } from "@/components/ui/scroll-indicator";
+import Link from "next/link";
 
 const pacifico = Pacifico({
   subsets: ["latin"],
@@ -210,9 +211,12 @@ export function HeroSection({
             initial="hidden"
             animate="visible"
           >
-            <button className="px-8 py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+            <Link
+              href="/auth"
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer inline-block"
+            >
               Start Creating Now
-            </button>
+            </Link>
           </motion.div>
         </div>
 
