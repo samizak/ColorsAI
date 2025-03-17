@@ -54,7 +54,7 @@ export function FeaturesSection({
     const panels = panelsRef.current;
 
     // Create a timeline for each panel
-    panels.forEach((panel, i) => {
+    panels.forEach((panel) => {
       // Create a timeline for each panel
       const tl = gsap.timeline({
         scrollTrigger: {

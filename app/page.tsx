@@ -16,7 +16,6 @@ const poppins = Poppins({
 });
 
 export default function Home() {
-  // Sample coloring images for the scrolling rows
   const coloringImages1 = [
     "/images/landing/inspirations/a.png",
     "/images/landing/inspirations/b.png",
@@ -27,33 +26,6 @@ export default function Home() {
     "/images/landing/inspirations/g.png",
     "/images/landing/inspirations/h.png",
     "/images/landing/inspirations/i.png",
-  ];
-
-  const features = [
-    {
-      title: "AI-Powered Creation",
-      description:
-        "Describe any idea and watch it transform into a perfect coloring page in seconds",
-      image: "/images/feature1.png",
-    },
-    {
-      title: "Kid-Friendly Designs",
-      description:
-        "Age-appropriate content with just the right level of detail for little artists",
-      image: "/images/feature2.png",
-    },
-    {
-      title: "Unlimited Variety",
-      description:
-        "From dinosaurs to princesses, create any theme your child can imagine",
-      image: "/images/feature3.png",
-    },
-    {
-      title: "Print & Color",
-      description:
-        "Instantly download and print your creations for immediate coloring fun",
-      image: "/images/feature4.png",
-    },
   ];
 
   return (

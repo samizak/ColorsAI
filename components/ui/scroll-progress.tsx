@@ -55,12 +55,13 @@ export function ScrollProgress() {
       if (dotsContainer) {
         dotsContainer.innerHTML = "";
 
-        sections.forEach((_, index) => {
-          const dot = document.createElement("div");
-          dot.className =
-            "h-4 w-4 rounded-full bg-gray-300 transition-all duration-300";
-          dotsContainer.appendChild(dot);
-        });
+        // Simplified dot creation
+        dotsContainer.innerHTML = Array.from(sections)
+          .map(
+            () =>
+              `<div class="h-4 w-4 rounded-full bg-gray-300 transition-all duration-300"></div>`
+          )
+          .join("");
 
         // Update active dot based on scroll position
         const dots = dotsContainer.querySelectorAll("div");
