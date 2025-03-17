@@ -225,7 +225,7 @@ export function FeaturesSection({
             Join thousands of parents and teachers who are using our platform to
             create custom coloring pages that kids absolutely love!
           </p>
-          <button className="px-8 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300">
+          <button className="px-8 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
             Start Creating
           </button>
         </div>
