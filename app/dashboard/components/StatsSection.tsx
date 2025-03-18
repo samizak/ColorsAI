@@ -1,7 +1,15 @@
 import React from "react";
 import { PlusCircle, Heart, Printer } from "lucide-react";
 
-const StatsSection = ({ totalPages }: { totalPages: number }) => {
+const StatsSection = ({
+  totalPages,
+  totalFavorites,
+  totalPrinted,
+}: {
+  totalPages: number;
+  totalFavorites: number;
+  totalPrinted: number;
+}) => {
   return (
     <>
       <div className="mb-8">
@@ -18,9 +26,7 @@ const StatsSection = ({ totalPages }: { totalPages: number }) => {
               <PlusCircle className="h-6 w-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-600">
-                Total Pages
-              </p>
+              <p className="text-sm font-medium text-gray-600">Total Pages</p>
               <p className="text-2xl font-semibold text-gray-900">
                 {totalPages}
               </p>
@@ -34,7 +40,9 @@ const StatsSection = ({ totalPages }: { totalPages: number }) => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Favorites</p>
-              <p className="text-2xl font-semibold text-gray-900">3</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {totalFavorites}
+              </p>
             </div>
           </div>
         </div>
@@ -45,7 +53,9 @@ const StatsSection = ({ totalPages }: { totalPages: number }) => {
             </div>
             <div>
               <p className="text-sm font-medium text-gray-600">Printed</p>
-              <p className="text-2xl font-semibold text-gray-900">12</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {totalPrinted}
+              </p>
             </div>
           </div>
         </div>

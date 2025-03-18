@@ -58,7 +58,11 @@ export default function Dashboard() {
       >
         <main className="container mx-auto px-4 py-8">
           {/* Stats Section */}
-          <StatsSection totalPages={COLORING_PAGES.length} />
+          <StatsSection
+            totalPages={COLORING_PAGES.length}
+            totalFavorites={0}
+            totalPrinted={0}
+          />
 
           <h1 className="text-3xl font-bold text-gray-800 mb-6">
             Your Coloring Pages
