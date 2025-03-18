@@ -6,6 +6,7 @@ import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { Clock, Heart, Edit } from "lucide-react";
+import { favoritesService } from "@/app/services/favorites";
 
 // Components
 import Sidebar from "./components/Sidebar";
@@ -28,8 +29,31 @@ const poppins = Poppins({
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("recent");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
+  const [favoriteCount, setFavoriteCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Load favorites on mount
+  useEffect(() => {
+    const loadFavorites = async () => {
+      try {
+        const [favorites, count] = await Promise.all([
+          favoritesService.getFavorites(),
+          favoritesService.getFavoriteCount()
+        ]);
+        setFavoriteIds(favorites);
+        setFavoriteCount(count);
+      } catch (error) {
+        console.error('Error loading favorites:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadFavorites();
+  }, []);
 
   // Animation for main content margin adjustment
   useEffect(() => {
@@ -43,6 +67,25 @@ export default function Dashboard() {
   }, [sidebarCollapsed]);
 
   const handleCreateNew = (path: string = "/create") => router.push(path);
+
+  const handleFavoriteChange = async (pageId: number, isFavorited: boolean) => {
+    if (isFavorited) {
+      setFavoriteIds(prev => [...prev, pageId]);
+      setFavoriteCount(prev => prev + 1);
+    } else {
+      setFavoriteIds(prev => prev.filter(id => id !== pageId));
+      setFavoriteCount(prev => prev - 1);
+    }
+  };
+
+  // Filter pages based on active tab
+  const filteredPages = COLORING_PAGES.filter(page => {
+    if (activeTab === "favorites") {
+      return favoriteIds.includes(page.id);
+    }
+    // Add more filters for other tabs if needed
+    return true;
+  });
 
   return (
     <div className={cn("min-h-screen bg-gray-50", poppins.variable)}>
@@ -60,7 +103,7 @@ export default function Dashboard() {
           {/* Stats Section */}
           <StatsSection
             totalPages={COLORING_PAGES.length}
-            totalFavorites={0}
+            totalFavorites={favoriteCount}
             totalPrinted={0}
           />
 
@@ -89,13 +132,19 @@ export default function Dashboard() {
             />
           </div>
 
-          {COLORING_PAGES.length > 0 ? (
+          {isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            </div>
+          ) : filteredPages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {COLORING_PAGES.map((page) => (
+              {filteredPages.map((page) => (
                 <ColoringCard
                   key={page.id}
                   page={page}
                   onEdit={(id) => router.push(`/edit/${id}`)}
+                  initialFavorited={favoriteIds.includes(page.id)}
+                  onFavoriteChange={handleFavoriteChange}
                 />
               ))}
             </div>

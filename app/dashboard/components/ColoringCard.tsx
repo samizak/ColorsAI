@@ -1,22 +1,48 @@
-import Image from "next/image";
-import React, { useState } from "react";
-import { Printer, Edit2, Heart } from "lucide-react";
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { Heart, Printer, Edit } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { favoritesService } from '@/app/services/favorites';
 
-type ColoringPage = {
+interface ColoringPage {
   id: number;
   title: string;
   image: string;
   created: string;
-};
+}
 
-const ColoringCard = ({
-  page,
-  onEdit,
-}: {
+interface ColoringCardProps {
   page: ColoringPage;
   onEdit: (id: number) => void;
-}) => {
-  const [isFavorite, setIsFavorite] = useState(false);
+  initialFavorited?: boolean;
+  onFavoriteChange?: (id: number, isFavorited: boolean) => void;
+  isFirstCard?: boolean;
+}
+
+export default function ColoringCard({
+  page,
+  onEdit,
+  initialFavorited = false,
+  onFavoriteChange,
+  isFirstCard = false,
+}: ColoringCardProps) {
+  const [isFavorited, setIsFavorited] = useState(initialFavorited);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleFavoriteClick = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    try {
+      const newFavoriteState = await favoritesService.toggleFavorite(page.id);
+      setIsFavorited(newFavoriteState);
+      onFavoriteChange?.(page.id, newFavoriteState);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 group">
@@ -25,6 +51,8 @@ const ColoringCard = ({
           src={page.image}
           alt={page.title}
           fill
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          priority={isFirstCard}
           className="object-cover transition-transform duration-300 group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
@@ -32,15 +60,23 @@ const ColoringCard = ({
             <h3 className="font-medium text-white">{page.title}</h3>
           </div>
         </div>
-        {/* Favorite button in top-right corner */}
         <button
-          onClick={() => setIsFavorite(!isFavorite)}
-          className="absolute top-2 right-2 p-2 bg-white/80 rounded-full shadow-sm hover:bg-white transition-colors z-10 cursor-pointer"
+          onClick={handleFavoriteClick}
+          disabled={isLoading}
+          className={cn(
+            "absolute top-2 right-2 p-2 rounded-full",
+            "bg-white/90 backdrop-blur-sm shadow-sm",
+            "transition-all duration-300 transform",
+            "hover:scale-110 hover:bg-white",
+            isLoading && "opacity-50 cursor-not-allowed"
+          )}
         >
           <Heart
-            className={`w-5 h-5 ${
-              isFavorite ? "fill-pink-500 text-pink-500" : "text-gray-500"
-            }`}
+            size={20}
+            className={cn(
+              "transition-colors duration-300",
+              isFavorited ? "fill-red-500 stroke-red-500" : "stroke-gray-600"
+            )}
           />
         </button>
       </div>
@@ -49,20 +85,18 @@ const ColoringCard = ({
         <p className="text-sm text-gray-500 mt-1">Created: {page.created}</p>
         <div className="flex mt-4 gap-2">
           <button className="flex-1 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-md text-sm font-medium hover:bg-purple-200 transition-colors cursor-pointer flex items-center justify-center gap-1">
-            <Printer className="w-4 h-4" />
+            <Printer size={16} />
             Print
           </button>
           <button
             onClick={() => onEdit(page.id)}
             className="flex-1 px-3 py-1.5 bg-pink-100 text-pink-700 rounded-md text-sm font-medium hover:bg-pink-200 transition-colors cursor-pointer flex items-center justify-center gap-1"
           >
-            <Edit2 className="w-4 h-4" />
+            <Edit size={16} />
             Edit
           </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default ColoringCard;
+}
