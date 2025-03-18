@@ -1,51 +1,87 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { updateSession } from "./utils/superbase/middleware";
+import { createServerClient } from "@supabase/ssr";
+import { type CookieOptions } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
-  const response = await updateSession(request);
-  const { pathname, searchParams } = request.nextUrl;
-
-  const authCookie = request.cookies.get("sb-auth-token");
-  const isAuthenticated = !!authCookie;
-
-  const isStripeRedirect =
-    pathname === "/protected/billing/success" && searchParams.has("session_id");
-  if (isStripeRedirect) {
-    return response;
+  // Skip middleware for callback route to prevent redirect loops
+  if (request.nextUrl.pathname.includes('/auth/callback')) {
+    return NextResponse.next();
   }
-
-  const protectedRoutes = ["/protected"];
-  const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route)
+  
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+  
+  // Create a Supabase client using the new ssr package
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          response.cookies.set({
+            name,
+            value,
+            ...options,
+          });
+        },
+        remove(name: string, options: CookieOptions) {
+          response.cookies.set({
+            name,
+            value: '',
+            ...options,
+            maxAge: 0,
+          });
+        },
+      },
+    }
   );
 
-  if (isProtectedRoute && !isAuthenticated) {
-    const redirectUrl = new URL("/auth/login", request.url);
-    redirectUrl.searchParams.set("returnTo", pathname + request.nextUrl.search);
+  // Refresh session if expired - required for Server Components
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // Get the pathname from the URL
+  const path = request.nextUrl.pathname;
+
+  // If there's no session and the user is trying to access a protected route
+  if (!session && isProtectedRoute(path)) {
+    console.log(`Middleware: No session, redirecting from ${path} to /auth`);
+    const redirectUrl = new URL('/auth', request.url);
+    redirectUrl.searchParams.set('redirectedFrom', path);
     return NextResponse.redirect(redirectUrl);
   }
 
-  if (
-    (pathname === "/auth/login" || pathname === "/auth/signup") &&
-    isAuthenticated
-  ) {
-    const redirectUrl = new URL("/", request.url);
-    return NextResponse.redirect(redirectUrl);
+  // If there's a session and the user is trying to access auth pages
+  if (session && isAuthRoute(path)) {
+    console.log(`Middleware: Session exists, redirecting from ${path} to /dashboard`);
+    return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
   return response;
 }
 
+function isProtectedRoute(pathname: string): boolean {
+  const protectedRoutes = ['/dashboard', '/create', '/profile', '/settings'];
+  return protectedRoutes.some(route => pathname.startsWith(route));
+}
+
+function isAuthRoute(pathname: string): boolean {
+  return pathname === '/auth' || pathname.startsWith('/auth');
+}
+
+// Only run middleware on specific paths
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
+    '/dashboard/:path*', 
+    '/auth/:path*', 
+    '/create/:path*', 
+    '/profile/:path*', 
+    '/settings/:path*'
   ],
 };
