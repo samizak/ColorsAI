@@ -328,7 +328,7 @@ const Sidebar = ({
           )}
           <button
             onClick={toggleCollapse}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
           >
             {isCollapsed ? (
               <ChevronRight size={20} />
@@ -345,27 +345,21 @@ const Sidebar = ({
             ))}
           </div>
 
-          <div className="border-t border-gray-200 pt-2" ref={profileMenuRef}>
+          <div
+            className="border-t border-gray-200 pt-2 cursor-pointer"
+            ref={profileMenuRef}
+          >
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               className={cn(
-                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-50 rounded-lg transition-colors relative",
+                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-50 rounded-lg transition-colors relative cursor-pointer",
                 profileMenuOpen && "bg-purple-50"
               )}
             >
-              {user?.user_metadata?.avatar_url ? (
-                <Image
-                  src={user.user_metadata.avatar_url}
-                  alt="Profile"
-                  width={32}
-                  height={32}
-                  className="rounded-full"
-                />
-              ) : (
-                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-medium">
-                  {getUserInitial()}
-                </div>
-              )}
+              <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-medium">
+                {getUserInitial()}
+              </div>
+
               {!isCollapsed && (
                 <div className="flex-1 text-left flex items-center justify-between">
                   <div>
@@ -388,8 +382,8 @@ const Sidebar = ({
             </button>
 
             {/* Profile Popup Menu */}
-            {profileMenuOpen && !isCollapsed && (
-              <div className="absolute bottom-[55px] left-0 w-full p-2 z-50">
+            {profileMenuOpen && (
+              <div className="absolute bottom-[55px] left-0 min-w-[240px] p-2 z-50">
                 <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
                   <div className="p-4 border-b border-gray-200">
                     <p className="font-medium text-gray-900">
