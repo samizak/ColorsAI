@@ -7,6 +7,18 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  Home,
+  Image as LucideImage,
+  Heart,
+  User,
+  Settings,
+  PlusCircle,
+  LogOut,
+} from "lucide-react";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -236,9 +248,192 @@ const CreateOption = ({
   </div>
 );
 
+const Sidebar = ({
+  isCollapsed,
+  toggleCollapse,
+}: {
+  isCollapsed: boolean;
+  toggleCollapse: () => void;
+}) => {
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const { user, signOut } = useSupabase();
+
+  const mainMenuItems = [
+    { icon: <Home size={20} />, label: "Dashboard", href: "/dashboard" },
+    { icon: <PlusCircle size={20} />, label: "Create", href: "/create" },
+    { icon: <LucideImage size={20} />, label: "Gallery", href: "/gallery" },
+    { icon: <Heart size={20} />, label: "Favorites", href: "/favorites" },
+    { icon: <Settings size={20} />, label: "Settings", href: "/settings" },
+  ];
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
+        setProfileMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const getUserInitial = () => {
+    const fullName = user?.user_metadata?.full_name || user?.email || "User";
+    return fullName.charAt(0).toUpperCase();
+  };
+
+  const MenuLink = ({
+    item,
+  }: {
+    item: { icon: React.ReactNode; label: string; href: string };
+  }) => (
+    <Link
+      href={item.href}
+      className={cn(
+        "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors mb-1",
+        !isCollapsed ? "justify-start" : "justify-center"
+      )}
+    >
+      {item.icon}
+      {!isCollapsed && <span>{item.label}</span>}
+    </Link>
+  );
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      window.location.href = "/auth";
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        "fixed left-0 top-0 h-screen bg-white border-r border-gray-200 transition-all duration-300 z-20",
+        isCollapsed ? "w-[60px]" : "w-[240px]"
+      )}
+    >
+      <div className="flex flex-col h-full">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          {!isCollapsed && (
+            <Link href="/" className="text-xl font-bold text-purple-600">
+              MC
+            </Link>
+          )}
+          <button
+            onClick={toggleCollapse}
+            className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+          >
+            {isCollapsed ? (
+              <ChevronRight size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
+          </button>
+        </div>
+
+        <nav className="flex-1 flex flex-col justify-between p-2">
+          <div className="space-y-1">
+            {mainMenuItems.map((item) => (
+              <MenuLink key={item.label} item={item} />
+            ))}
+          </div>
+
+          <div className="border-t border-gray-200 pt-2" ref={profileMenuRef}>
+            <button
+              onClick={() => setProfileMenuOpen(!profileMenuOpen)}
+              className={cn(
+                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-50 rounded-lg transition-colors relative",
+                profileMenuOpen && "bg-purple-50"
+              )}
+            >
+              {user?.user_metadata?.avatar_url ? (
+                <Image
+                  src={user.user_metadata.avatar_url}
+                  alt="Profile"
+                  width={32}
+                  height={32}
+                  className="rounded-full"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-medium">
+                  {getUserInitial()}
+                </div>
+              )}
+              {!isCollapsed && (
+                <div className="flex-1 text-left flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-gray-900 text-sm">
+                      {user?.user_metadata?.full_name || "User"}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate max-w-[140px]">
+                      {user?.email || "user@email.com"}
+                    </p>
+                  </div>
+                  <ChevronDown
+                    size={16}
+                    className={cn(
+                      "text-gray-400 transition-transform",
+                      profileMenuOpen && "rotate-180"
+                    )}
+                  />
+                </div>
+              )}
+            </button>
+
+            {/* Profile Popup Menu */}
+            {profileMenuOpen && !isCollapsed && (
+              <div className="absolute bottom-[55px] left-0 w-full p-2 z-50">
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
+                  <div className="p-4 border-b border-gray-200">
+                    <p className="font-medium text-gray-900">
+                      {user?.user_metadata?.full_name || "User"}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {user?.email || "user@email.com"}
+                    </p>
+                  </div>
+                  <Link
+                    href="/profile"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <User size={16} />
+                    Your Profile
+                  </Link>
+                  <Link
+                    href="/settings"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <Settings size={16} />
+                    Settings
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <LogOut size={16} />
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </nav>
+      </div>
+    </div>
+  );
+};
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("recent");
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user, signOut } = useSupabase();
@@ -278,151 +473,29 @@ export default function Dashboard() {
 
   return (
     <div className={cn("min-h-screen bg-gray-50", poppins.variable)}>
-      <header className="bg-white shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-purple-600">
-            Magical Coloring
-          </Link>
+      <Sidebar
+        isCollapsed={sidebarCollapsed}
+        toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
 
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => handleCreateNew()}
-              className="px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              Create New
-            </button>
-
-            <div className="relative" ref={userMenuRef}>
-              <button
-                onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center hover:bg-gray-300 transition-colors cursor-pointer"
-              >
-                <UserAvatar initials={getUserInitials()} />
-              </button>
-
-              {userMenuOpen && <UserMenu user={user} onLogout={handleLogout} />}
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">
-          Your Coloring Pages
-        </h1>
-
-        <div className="flex border-b border-gray-200 mb-8">
-          {/* Replace the mapping with individual TabButton components that include icons */}
-          <TabButton
-            active={activeTab === "recent"}
-            label="Recent"
-            onClick={() => setActiveTab("recent")}
-            icon={
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-            }
-          />
-          <TabButton
-            active={activeTab === "favorites"}
-            label="Favorites"
-            onClick={() => setActiveTab("favorites")}
-            icon={
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            }
-          />
-          <TabButton
-            active={activeTab === "created"}
-            label="Created by You"
-            onClick={() => setActiveTab("created")}
-            icon={
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                />
-              </svg>
-            }
-          />
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {COLORING_PAGES.map((page) => (
-            <ColoringCard
-              key={page.id}
-              page={page}
-              onEdit={(id) => router.push(`/edit/${id}`)}
-            />
-          ))}
-        </div>
-
-        {COLORING_PAGES.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg
-                className="w-12 h-12 text-gray-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-            </div>
-            <h3 className="text-xl font-medium text-gray-800 mb-2">
-              No coloring pages yet
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Create your first coloring page to get started
-            </p>
-            <button
-              onClick={() => handleCreateNew()}
-              className="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:shadow-lg transition-shadow cursor-pointer"
-            >
-              Create New Page
-            </button>
-          </div>
+      <div
+        className={cn(
+          "transition-all duration-300",
+          sidebarCollapsed ? "ml-[60px]" : "ml-[240px]"
         )}
+      >
+        <main className="container mx-auto px-4 py-8">
+          {/* Stats Section Header */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-800">Overview</h2>
+            <p className="text-gray-600 mt-1">
+              Track your coloring page statistics
+            </p>
+          </div>
 
-        <div className="mt-16 bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">
-            Create Something New
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-purple-100">
+          {/* Stats Section */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-purple-100 hover:shadow-md transition-shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-purple-100 mr-4">
                   <svg
@@ -449,7 +522,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-pink-100">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-pink-100 hover:shadow-md transition-shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-pink-100 mr-4">
                   <svg
@@ -472,7 +545,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100 hover:shadow-md transition-shadow">
               <div className="flex items-center">
                 <div className="p-3 rounded-full bg-blue-100 mr-4">
                   <svg
@@ -496,83 +569,201 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
-          <CreateOption
-            title="Text to Coloring Page"
-            description="Describe any idea and watch it transform into a perfect coloring page"
-            icon={
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+            Your Coloring Pages
+          </h1>
+
+          <div className="flex border-b border-gray-200 mb-8">
+            {/* Replace the mapping with individual TabButton components that include icons */}
+            <TabButton
+              active={activeTab === "recent"}
+              label="Recent"
+              onClick={() => setActiveTab("recent")}
+              icon={
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              }
+            />
+            <TabButton
+              active={activeTab === "favorites"}
+              label="Favorites"
+              onClick={() => setActiveTab("favorites")}
+              icon={
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+                  />
+                </svg>
+              }
+            />
+            <TabButton
+              active={activeTab === "created"}
+              label="Created by You"
+              onClick={() => setActiveTab("created")}
+              icon={
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                  />
+                </svg>
+              }
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {COLORING_PAGES.map((page) => (
+              <ColoringCard
+                key={page.id}
+                page={page}
+                onEdit={(id) => router.push(`/edit/${id}`)}
+              />
+            ))}
+          </div>
+
+          {COLORING_PAGES.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-24 h-24 mx-auto mb-6 bg-gray-100 rounded-full flex items-center justify-center">
+                <svg
+                  className="w-12 h-12 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-xl font-medium text-gray-800 mb-2">
+                No coloring pages yet
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Create your first coloring page to get started
+              </p>
+              <button
+                onClick={() => handleCreateNew()}
+                className="px-6 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-full shadow-md hover:shadow-lg transition-shadow cursor-pointer"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-            }
-            buttonText="Get Started"
-            onClick={() => handleCreateNew("/create/text-to-image")}
-            gradientFrom="from-pink-50"
-            gradientTo="to-purple-50"
-            buttonColor="purple"
-            borderColor="border-purple-100"
-          />
-          <CreateOption
-            title="Upload Your Own"
-            description="Upload any image and convert it into a beautiful coloring page"
-            icon={
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
-              </svg>
-            }
-            buttonText="Upload Image"
-            onClick={() => handleCreateNew("/create/upload")}
-            gradientFrom="from-blue-50"
-            gradientTo="to-cyan-50"
-            buttonColor="blue"
-            borderColor="border-blue-100"
-          />
-          <CreateOption
-            title="Browse Templates"
-            description="Choose from our collection of ready-to-color templates"
-            icon={
-              <svg
-                className="w-6 h-6 text-white"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                />
-              </svg>
-            }
-            buttonText="View Templates"
-            onClick={() => handleCreateNew("/templates")}
-            gradientFrom="from-green-50"
-            gradientTo="to-teal-50"
-            buttonColor="green"
-            borderColor="border-green-100"
-          />
-        </div>
-      </main>
+                Create New Page
+              </button>
+            </div>
+          )}
+
+          <div className="mt-16 bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">
+              Create Something New
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <CreateOption
+                title="Text to Coloring Page"
+                description="Describe any idea and watch it transform into a perfect coloring page"
+                icon={
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                    />
+                  </svg>
+                }
+                buttonText="Get Started"
+                onClick={() => handleCreateNew("/create/text-to-image")}
+                gradientFrom="from-pink-50"
+                gradientTo="to-purple-50"
+                buttonColor="purple"
+                borderColor="border-purple-100"
+              />
+              <CreateOption
+                title="Upload Your Own"
+                description="Upload any image and convert it into a beautiful coloring page"
+                icon={
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                }
+                buttonText="Upload Image"
+                onClick={() => handleCreateNew("/create/upload")}
+                gradientFrom="from-blue-50"
+                gradientTo="to-cyan-50"
+                buttonColor="blue"
+                borderColor="border-blue-100"
+              />
+              <CreateOption
+                title="Browse Templates"
+                description="Choose from our collection of ready-to-color templates"
+                icon={
+                  <svg
+                    className="w-6 h-6 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                    />
+                  </svg>
+                }
+                buttonText="View Templates"
+                onClick={() => handleCreateNew("/templates")}
+                gradientFrom="from-green-50"
+                gradientTo="to-teal-50"
+                buttonColor="green"
+                borderColor="border-green-100"
+              />
+            </div>
+          </div>
+        </main>
+      </div>
     </div>
   );
 }
