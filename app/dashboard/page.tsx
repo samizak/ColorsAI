@@ -6,7 +6,7 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/providers/auth-provider";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -21,7 +21,7 @@ export default function Dashboard() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
-  const { user, signOut } = useAuth();
+  const { user, signOut } = useSupabase();
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -47,8 +47,16 @@ export default function Dashboard() {
 
   // Handle logout
   const handleLogout = async () => {
-    await signOut();
-    router.push("/auth");
+    try {
+      console.log("Logging out...");
+      // Call signOut from the provider and wait for it to complete
+      await signOut();
+      // The signOut function will handle the redirect
+    } catch (error) {
+      console.error("Error signing out:", error);
+      // Only redirect if there's an error
+      window.location.href = '/auth';
+    }
   };
 
   // Get user initials for avatar
@@ -105,7 +113,7 @@ export default function Dashboard() {
     },
   ];
 
-  // Removed duplicate function declarations
+  console.log(user);
 
   return (
     <div className={cn("min-h-screen bg-gray-50", poppins.variable)}>

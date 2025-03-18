@@ -1,9 +1,6 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
-import { AuthProvider } from "@/components/providers/auth-provider";
-import "./globals.css";
+import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
 
 export default function RootLayout({
   children,
@@ -13,7 +10,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <SupabaseProvider>
+          <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        </SupabaseProvider>
       </body>
     </html>
   );

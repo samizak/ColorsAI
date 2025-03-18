@@ -212,7 +212,7 @@ export function HeroSection({
             animate="visible"
           >
             <Link
-              href="/auth"
+              href="/dashboard"
               className="px-8 py-3 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer inline-block"
             >
               Start Creating Now

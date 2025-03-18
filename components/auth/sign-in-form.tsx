@@ -2,26 +2,28 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { createBrowserClient } from '@supabase/ssr';
-import { useAuth } from "@/components/providers/auth-provider";
+import { createBrowserClient } from "@supabase/ssr";
+import { useSupabase } from "@/components/providers/SupabaseProvider";
 
 export function SignInForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [supabase] = useState(() => createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  ));
+  const [supabase] = useState(() =>
+    createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+  );
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { session } = useAuth();
+  const { session } = useSupabase();
 
   // Handle redirection when session is available
   useEffect(() => {
     if (session) {
-      const redirectedFrom = searchParams.get('redirectedFrom') || '/dashboard';
+      const redirectedFrom = searchParams.get("redirectedFrom") || "/dashboard";
       router.replace(redirectedFrom);
     }
   }, [session, router, searchParams]);
@@ -48,11 +50,10 @@ export function SignInForm() {
       }
 
       // Get the redirectedFrom parameter from the URL
-      const redirectedFrom = searchParams.get('redirectedFrom') || '/dashboard';
-      
+      const redirectedFrom = searchParams.get("redirectedFrom") || "/dashboard";
+
       // Force a hard refresh to ensure the session is properly set
       window.location.href = redirectedFrom;
-      
     } catch (error: any) {
       setError(error.message || "Failed to sign in");
     } finally {
