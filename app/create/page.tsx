@@ -7,6 +7,17 @@ import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { Send, Image, Sparkles } from "lucide-react";
 
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY!;
+const genAI = new GoogleGenerativeAI(apiKey);
+const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash-exp-image-generation",
+  generationConfig: {
+    responseModalities: ["Text", "Image"],
+  },
+} as any);
+
 // Components
 import Sidebar from "../dashboard/components/Sidebar";
 
@@ -41,14 +52,26 @@ export default function CreatePage() {
     setIsGenerating(true);
 
     try {
-      // This is a placeholder for your actual API call
-      // Replace with your actual image generation logic
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const response = await model.generateContent(prompt);
+      console.log(response);
+      if (!response.response?.candidates?.[0]?.content?.parts) {
+        throw new Error("Failed to generate image");
+      }
 
-      // Simulate a generated image
-      setGeneratedImage("/images/landing/inspirations/a.png");
+      const imagePart = response.response.candidates[0].content.parts.find(
+        (part: any) => part.inlineData
+      );
+
+      if (!imagePart?.inlineData?.data) {
+        throw new Error("Failed to generate image");
+      }
+
+      const imageData = imagePart.inlineData.data;
+      const imageUrl = `data:image/png;base64,${imageData}`;
+      setGeneratedImage(imageUrl);
     } catch (error) {
       console.error("Error generating image:", error);
+      // You might want to show an error message to the user here
     } finally {
       setIsGenerating(false);
     }
