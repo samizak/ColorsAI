@@ -5,18 +5,7 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { Send, Image, Sparkles } from "lucide-react";
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY!;
-const genAI = new GoogleGenerativeAI(apiKey);
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp-image-generation",
-  generationConfig: {
-    responseModalities: ["Text", "Image"],
-  },
-} as any);
+import { Send, Sparkles } from "lucide-react";
 
 // Components
 import Sidebar from "../dashboard/components/Sidebar";
@@ -52,22 +41,21 @@ export default function CreatePage() {
     setIsGenerating(true);
 
     try {
-      const response = await model.generateContent(prompt);
-      console.log(response);
-      if (!response.response?.candidates?.[0]?.content?.parts) {
-        throw new Error("Failed to generate image");
+      const response = await fetch("/api/generate-image", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to generate image");
       }
 
-      const imagePart = response.response.candidates[0].content.parts.find(
-        (part: any) => part.inlineData
-      );
-
-      if (!imagePart?.inlineData?.data) {
-        throw new Error("Failed to generate image");
-      }
-
-      const imageData = imagePart.inlineData.data;
-      const imageUrl = `data:image/png;base64,${imageData}`;
+      const data = await response.json();
+      const imageUrl = `data:image/png;base64,${data.imageData}`;
       setGeneratedImage(imageUrl);
     } catch (error) {
       console.error("Error generating image:", error);
