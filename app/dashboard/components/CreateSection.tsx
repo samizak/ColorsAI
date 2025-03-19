@@ -15,7 +15,7 @@ const CreateSection = ({
       <CreateOption
         title="Text to Coloring Page"
         description="Describe any idea and watch it transform into a perfect coloring page"
-        icon={<PlusCircle className="w-6 h-6 text-white" />}
+        icon={<PlusCircle className="w-6 h-6" />}
         buttonText="Get Started"
         onClick={() => onCreateNew("/create/text-to-image")}
         gradientFrom="from-pink-50"
@@ -26,7 +26,7 @@ const CreateSection = ({
       <CreateOption
         title="Upload Your Own"
         description="Upload any image and convert it into a beautiful coloring page"
-        icon={<Upload className="w-6 h-6 text-white" />}
+        icon={<Upload className="w-6 h-6" />}
         buttonText="Upload Image"
         onClick={() => onCreateNew("/create/upload")}
         gradientFrom="from-blue-50"
@@ -37,7 +37,7 @@ const CreateSection = ({
       <CreateOption
         title="Browse Templates"
         description="Choose from our collection of ready-to-color templates"
-        icon={<Layers className="w-6 h-6 text-white" />}
+        icon={<Layers className="w-6 h-6" />}
         buttonText="View Templates"
         onClick={() => onCreateNew("/templates")}
         gradientFrom="from-green-50"

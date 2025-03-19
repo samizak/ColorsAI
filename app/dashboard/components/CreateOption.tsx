@@ -22,6 +22,20 @@ const CreateOption = ({
   buttonColor: string;
   borderColor: string;
 }) => {
+  // Get the correct background color class for the icon container
+  const getIconBgClass = () => {
+    switch (buttonColor) {
+      case 'purple':
+        return 'bg-purple-500';
+      case 'blue':
+        return 'bg-blue-500';
+      case 'green':
+        return 'bg-green-500';
+      default:
+        return 'bg-gray-500';
+    }
+  };
+
   // Map button colors to their respective Tailwind classes for hover effects
   const getHoverClasses = () => {
     switch (buttonColor) {
@@ -36,13 +50,30 @@ const CreateOption = ({
     }
   };
 
+  // Get text and border color classes
+  const getButtonColorClasses = () => {
+    switch (buttonColor) {
+      case 'purple':
+        return 'text-purple-600 dark:text-purple-300 border-purple-200 dark:border-purple-400/30';
+      case 'blue':
+        return 'text-blue-600 dark:text-blue-300 border-blue-200 dark:border-blue-400/30';
+      case 'green':
+        return 'text-green-600 dark:text-green-300 border-green-200 dark:border-green-400/30';
+      default:
+        return 'text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-400/30';
+    }
+  };
+
   return (
     <div
       className={`bg-gradient-to-br ${gradientFrom} ${gradientTo} dark:bg-gray-700 dark:bg-none p-6 rounded-lg border ${borderColor} dark:border-gray-600 hover:shadow-md transition-shadow h-full flex flex-col`}
     >
       <div>
         <div
-          className={`w-12 h-12 bg-gradient-to-r from-${buttonColor}-500 to-${buttonColor}-600 rounded-full flex items-center justify-center mb-4`}
+          className={cn(
+            "w-12 h-12 rounded-full flex items-center justify-center mb-4 text-white",
+            getIconBgClass()
+          )}
         >
           {icon}
         </div>
@@ -58,8 +89,8 @@ const CreateOption = ({
           className={cn(
             "w-full px-4 py-2 rounded-md transition-all duration-200 cursor-pointer",
             "bg-white dark:bg-gray-800",
-            `text-${buttonColor}-600 dark:text-${buttonColor}-300`,
-            `border-2 border-${buttonColor}-200 dark:border-${buttonColor}-100/30`,
+            "border-2",
+            getButtonColorClasses(),
             getHoverClasses(),
             "focus:outline-none focus:ring-2",
             `focus:ring-${buttonColor}-500 dark:focus:ring-${buttonColor}-300`,
