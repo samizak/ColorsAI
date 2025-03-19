@@ -16,6 +16,8 @@ import {
   Settings,
   PlusCircle,
   LogOut,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 const Sidebar = ({
@@ -26,6 +28,7 @@ const Sidebar = ({
   toggleCollapse: () => void;
 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useSupabase();
@@ -165,6 +168,37 @@ const Sidebar = ({
                     <User size={16} />
                     Your Profile
                   </Link>
+                  
+                  {/* Dark Mode Toggle */}
+                  <div 
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between cursor-pointer"
+                    onClick={() => {
+                      setIsDarkMode(!isDarkMode);
+                      // We'll implement the actual theme change later
+                      console.log("Dark mode toggled:", !isDarkMode);
+                    }}
+                  >
+                    <div className="flex items-center gap-2">
+                      {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+                      {isDarkMode ? "Light Mode" : "Dark Mode"}
+                    </div>
+                    <div className="relative inline-block w-10 align-middle select-none">
+                      <input
+                        type="checkbox"
+                        name="darkMode"
+                        id="darkMode"
+                        checked={isDarkMode}
+                        readOnly
+                        className="sr-only peer"
+                      />
+                      <label
+                        htmlFor="darkMode"
+                        onClick={(e) => e.stopPropagation()}
+                        className="block h-6 overflow-hidden bg-gray-200 rounded-full cursor-pointer peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4"
+                      ></label>
+                    </div>
+                  </div>
+                  
                   <Link
                     href="/settings"
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
