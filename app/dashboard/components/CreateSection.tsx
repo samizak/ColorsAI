@@ -2,7 +2,11 @@ import React from "react";
 import CreateOption from "./CreateOption";
 import { PlusCircle, Upload, Layers } from "lucide-react";
 
-const CreateSection = ({ onCreateNew }: { onCreateNew: (path: string) => void }) => (
+const CreateSection = ({
+  onCreateNew,
+}: {
+  onCreateNew: (path: string) => void;
+}) => (
   <div className="mt-16 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
     <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
       Create Something New
