@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { Send, Sparkles, X } from "lucide-react";
+import { Send, Sparkles, X, Loader2 } from "lucide-react";
 
 // Components
 import Sidebar from "../dashboard/components/Sidebar";
@@ -65,7 +65,7 @@ export default function CreatePage() {
   };
 
   return (
-    <div className={cn("min-h-screen bg-gray-50", poppins.variable)}>
+    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -77,22 +77,22 @@ export default function CreatePage() {
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
         <main className="container mx-auto px-4 py-8 flex-1 overflow-hidden">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">
             Create a Coloring Page
           </h1>
 
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8 flex flex-col h-[calc(100vh-13rem)] overflow-hidden">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8 flex flex-col h-[calc(100vh-13rem)] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Text to Coloring Page
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Describe what you want to see in your coloring page, and our AI
               will create it for you.
             </p>
 
             {generatedImage ? (
               <div className="mb-4 flex-1 flex flex-col min-h-0">
-                <div className="relative w-full flex-1 rounded-lg overflow-hidden border border-gray-200">
+                <div className="relative w-full flex-1 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                   <img
                     src={generatedImage}
                     alt="Generated coloring page"
@@ -102,34 +102,34 @@ export default function CreatePage() {
                 <div className="flex justify-end mt-4 gap-3">
                   <button
                     onClick={() => setGeneratedImage(null)}
-                    className="px-4 py-2 text-gray-600 border border-gray-300 rounded-md hover:bg-gray-50"
+                    className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     Regenerate
                   </button>
                   <button
                     onClick={() => router.push(`/edit/new`)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800"
                   >
                     Continue to Edit
                   </button>
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center flex-1 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 mb-4 min-h-0">
+              <div className="flex items-center justify-center flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 mb-4 min-h-0">
                 {isGenerating ? (
                   <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-                    <p className="text-gray-600">
+                    <Loader2 className="h-12 w-12 text-purple-600 dark:text-purple-400 animate-spin mx-auto mb-4" />
+                    <p className="text-gray-600 dark:text-gray-300">
                       Generating your coloring page...
                     </p>
                   </div>
                 ) : (
                   <div className="text-center p-6">
                     <Sparkles className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-2">
+                    <p className="text-gray-600 dark:text-gray-300 mb-2">
                       Enter a prompt below to generate your coloring page
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       For example: "A magical forest with unicorns and fairies"
                     </p>
                   </div>
@@ -138,7 +138,7 @@ export default function CreatePage() {
             )}
 
             <div className="flex flex-col gap-2">
-              <h3 className="text-md font-medium text-gray-700">
+              <h3 className="text-md font-medium text-gray-700 dark:text-gray-300">
                 Example prompts:
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -150,7 +150,7 @@ export default function CreatePage() {
                   <button
                     key={examplePrompt}
                     onClick={() => setPrompt(examplePrompt)}
-                    className="p-3 text-sm text-left bg-gray-50 hover:bg-gray-100 rounded-md border border-gray-200"
+                    className="p-3 text-sm text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md border border-gray-200 dark:border-gray-600"
                   >
                     {examplePrompt}
                   </button>
@@ -161,7 +161,7 @@ export default function CreatePage() {
         </main>
 
         {/* Fixed prompt input at bottom */}
-        <div className="border-t border-gray-200 bg-white p-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div className="container mx-auto">
             <div className="flex items-center gap-3">
               <div className="flex-1 relative">
@@ -170,7 +170,7 @@ export default function CreatePage() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe your coloring page..."
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !isGenerating) {
                       handleGenerateImage();
@@ -180,7 +180,7 @@ export default function CreatePage() {
                 {prompt && (
                   <button
                     onClick={() => setPrompt("")}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -192,12 +192,12 @@ export default function CreatePage() {
                 className={cn(
                   "p-3 rounded-lg flex items-center justify-center",
                   isGenerating || !prompt.trim()
-                    ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                    : "bg-purple-600 text-white hover:bg-purple-700"
+                    ? "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                    : "bg-purple-600 dark:bg-purple-700 text-white hover:bg-purple-700 dark:hover:bg-purple-800"
                 )}
               >
                 {isGenerating ? (
-                  <div className="h-5 w-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <Loader2 className="h-5 w-5 animate-spin" />
                 ) : (
                   <Send className="h-5 w-5" />
                 )}
