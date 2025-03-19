@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Sparkles, X } from "lucide-react";
 
 // Components
 import Sidebar from "../dashboard/components/Sidebar";
@@ -59,7 +59,6 @@ export default function CreatePage() {
       setGeneratedImage(imageUrl);
     } catch (error) {
       console.error("Error generating image:", error);
-      // You might want to show an error message to the user here
     } finally {
       setIsGenerating(false);
     }
@@ -90,15 +89,6 @@ export default function CreatePage() {
               Describe what you want to see in your coloring page, and our AI
               will create it for you.
             </p>
-
-            <div className="flex items-center gap-4 mb-8">
-              <div className="flex-1 h-1 bg-purple-100 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-600 w-1/3"></div>
-              </div>
-              <span className="text-sm font-medium text-gray-600">
-                Step 1 of 3
-              </span>
-            </div>
 
             {generatedImage ? (
               <div className="mb-4 flex-1 flex flex-col min-h-0">
@@ -190,21 +180,9 @@ export default function CreatePage() {
                 {prompt && (
                   <button
                     onClick={() => setPrompt("")}
-                    className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
+                    <X className="w-5 h-5" />
                   </button>
                 )}
               </div>
