@@ -3,8 +3,8 @@ import CreateOption from "./CreateOption";
 import { PlusCircle, Upload, Layers } from "lucide-react";
 
 const CreateSection = ({ onCreateNew }: { onCreateNew: (path: string) => void }) => (
-  <div className="mt-16 bg-white rounded-xl shadow-md p-6">
-    <h2 className="text-2xl font-bold text-gray-800 mb-4">
+  <div className="mt-16 bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
       Create Something New
     </h2>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

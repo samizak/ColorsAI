@@ -19,6 +19,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
+import { useTheme } from "@/components/providers/theme-provider";
 
 const Sidebar = ({
   isCollapsed,
@@ -28,10 +29,11 @@ const Sidebar = ({
   toggleCollapse: () => void;
 }) => {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const { user, signOut } = useSupabase();
+  const { theme, toggleTheme } = useTheme();
+  const isDarkMode = theme === "dark";
 
   // Animation for sidebar collapse/expand
   useEffect(() => {
@@ -73,11 +75,11 @@ const Sidebar = ({
   return (
     <div
       ref={sidebarRef}
-      className="fixed left-0 top-0 h-screen bg-white border-r border-gray-200 z-20"
+      className="fixed left-0 top-0 h-screen bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 z-20"
       style={{ width: isCollapsed ? "60px" : "240px" }}
     >
       <div className="flex flex-col h-full">
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           {!isCollapsed && (
             <Link href="/" className="text-xl font-bold text-purple-600">
               MC
@@ -85,7 +87,7 @@ const Sidebar = ({
           )}
           <button
             onClick={toggleCollapse}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-600 dark:text-gray-400"
           >
             {isCollapsed ? (
               <ChevronRight size={20} />
@@ -102,7 +104,7 @@ const Sidebar = ({
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-purple-50 hover:text-purple-600 transition-colors mb-1",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-1",
                   !isCollapsed ? "justify-start" : "justify-center"
                 )}
               >
@@ -113,28 +115,28 @@ const Sidebar = ({
           </div>
 
           <div
-            className="border-t border-gray-200 pt-2 cursor-pointer"
+            className="border-t border-gray-200 dark:border-gray-800 pt-2 cursor-pointer"
             ref={profileMenuRef}
           >
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               className={cn(
-                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-50 rounded-lg transition-colors relative cursor-pointer",
-                profileMenuOpen && "bg-purple-50",
+                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors relative cursor-pointer",
+                profileMenuOpen && "bg-purple-50 dark:bg-purple-900/20",
                 isCollapsed && "justify-center"
               )}
             >
-              <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-medium">
+              <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center font-medium">
                 {getUserInitial()}
               </div>
 
               {!isCollapsed && (
                 <div className="flex-1 text-left flex items-center justify-between">
                   <div>
-                    <p className="font-medium text-gray-900 text-sm">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm">
                       {user?.user_metadata?.full_name || "User"}
                     </p>
-                    <p className="text-xs text-gray-500 truncate max-w-[140px]">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[140px]">
                       {user?.email || "user@email.com"}
                     </p>
                   </div>
@@ -152,18 +154,18 @@ const Sidebar = ({
             {/* Profile Popup Menu */}
             {profileMenuOpen && (
               <div className="absolute bottom-[55px] left-0 min-w-[240px] p-2 z-50">
-                <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden">
-                  <div className="p-4 border-b border-gray-200">
-                    <p className="font-medium text-gray-900">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+                  <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+                    <p className="font-medium text-gray-900 dark:text-white">
                       {user?.user_metadata?.full_name || "User"}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {user?.email || "user@email.com"}
                     </p>
                   </div>
                   <Link
                     href="/profile"
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
                   >
                     <User size={16} />
                     Your Profile
@@ -171,12 +173,8 @@ const Sidebar = ({
                   
                   {/* Dark Mode Toggle */}
                   <div 
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-between cursor-pointer"
-                    onClick={() => {
-                      setIsDarkMode(!isDarkMode);
-                      // We'll implement the actual theme change later
-                      console.log("Dark mode toggled:", !isDarkMode);
-                    }}
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between cursor-pointer"
+                    onClick={toggleTheme}
                   >
                     <div className="flex items-center gap-2">
                       {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
@@ -194,14 +192,14 @@ const Sidebar = ({
                       <label
                         htmlFor="darkMode"
                         onClick={(e) => e.stopPropagation()}
-                        className="block h-6 overflow-hidden bg-gray-200 rounded-full cursor-pointer peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4"
+                        className="block h-6 overflow-hidden bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4"
                       ></label>
                     </div>
                   </div>
                   
                   <Link
                     href="/settings"
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
                   >
                     <Settings size={16} />
                     Settings
@@ -215,7 +213,7 @@ const Sidebar = ({
                         window.location.href = "/auth";
                       }
                     }}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
                   >
                     <LogOut size={16} />
                     Sign out

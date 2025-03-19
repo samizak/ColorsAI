@@ -1,6 +1,7 @@
 import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
+import { ThemeProvider } from "@/components/providers/theme-provider";
 
 export default function RootLayout({
   children,
@@ -8,10 +9,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>
         <SupabaseProvider>
-          <SmoothScrollProvider>{children}</SmoothScrollProvider>
+          <ThemeProvider>
+            <SmoothScrollProvider>{children}</SmoothScrollProvider>
+          </ThemeProvider>
         </SupabaseProvider>
       </body>
     </html>
