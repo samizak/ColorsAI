@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner"; // Replace react-hot-toast with sonner
 import gsap from "gsap";
 import { Send, Sparkles, X, Loader2 } from "lucide-react";
 
@@ -57,15 +58,51 @@ export default function CreatePage() {
       const data = await response.json();
       const imageUrl = `data:image/png;base64,${data.imageData}`;
       setGeneratedImage(imageUrl);
+
+      // Handle the saved image information
+      if (data.savedImage) {
+        // Show a success message with Sonner
+        toast.success("Image saved to your collection!", {
+          description: "You can find it in your dashboard.",
+          action: {
+            label: "View",
+            onClick: () => router.push("/dashboard"),
+          },
+        });
+
+        console.log("Toast success");
+
+        // You can store the ID for later use
+        const imageId = data.savedImage.id;
+
+        // Update the continue button to go to the edit page with the saved image ID
+        const continueButton = document.querySelector("button[data-continue]");
+        if (continueButton) {
+          continueButton.addEventListener("click", () => {
+            router.push(`/edit/${imageId}`);
+          });
+        }
+      } else if (data.message) {
+        // Show informational message
+        toast.info(data.message);
+      }
     } catch (error) {
       console.error("Error generating image:", error);
+      toast.error("Failed to generate image", {
+        description: "Please try again later.",
+      });
     } finally {
       setIsGenerating(false);
     }
   };
 
   return (
-    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
+    <div
+      className={cn(
+        "min-h-screen bg-gray-50 dark:bg-gray-900",
+        poppins.variable
+      )}
+    >
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -98,20 +135,6 @@ export default function CreatePage() {
                     alt="Generated coloring page"
                     className="w-full h-full object-contain"
                   />
-                </div>
-                <div className="flex justify-end mt-4 gap-3">
-                  <button
-                    onClick={() => setGeneratedImage(null)}
-                    className="px-4 py-2 text-gray-600 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700"
-                  >
-                    Regenerate
-                  </button>
-                  <button
-                    onClick={() => router.push(`/edit/new`)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-800"
-                  >
-                    Continue to Edit
-                  </button>
                 </div>
               </div>
             ) : (

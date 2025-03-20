@@ -2,6 +2,7 @@ import "./globals.css";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -14,6 +15,7 @@ export default function RootLayout({
         <SupabaseProvider>
           <ThemeProvider>
             <SmoothScrollProvider>{children}</SmoothScrollProvider>
+            <Toaster />
           </ThemeProvider>
         </SupabaseProvider>
       </body>
