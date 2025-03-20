@@ -33,6 +33,7 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [coloringPages, setColoringPages] = useState<any[]>([]);
   const [userGeneratedPages, setUserGeneratedPages] = useState<any[]>([]);
+  const [totalPagesCount, setTotalPagesCount] = useState(0); // Add this state for total pages count
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -42,12 +43,14 @@ export default function Dashboard() {
       setIsLoading(true);
       try {
         // Load favorites regardless of tab
-        const [favorites, count] = await Promise.all([
+        const [favorites, count, totalCount] = await Promise.all([
           favoritesService.getFavorites(),
           favoritesService.getFavoriteCount(),
+          coloringPagesService.getTotalPagesCount(), // Add this new call
         ]);
         setFavoriteIds(favorites);
         setFavoriteCount(count);
+        setTotalPagesCount(totalCount); // Set the total count
 
         // Load tab-specific data
         if (activeTab === "recent") {
@@ -161,7 +164,7 @@ export default function Dashboard() {
                     Total Pages
                   </p>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {COLORING_PAGES.length}
+                    {totalPagesCount}
                   </p>
                 </div>
               </div>

@@ -35,7 +35,21 @@ export const coloringPagesService = {
     return data || [];
   },
 
-  // Add this function to your existing coloringPagesService
+  async getTotalPagesCount() {
+    const supabase = createClient();
+    
+    const { count, error } = await supabase
+      .from("coloring_pages")
+      .select("*", { count: "exact", head: true });
+      
+    if (error) {
+      console.error("Error fetching total pages count:", error);
+      throw error;
+    }
+    
+    return count || 0;
+  },
+
   async deleteColoringPage(id: number) {
     const supabase = createClient();
 
