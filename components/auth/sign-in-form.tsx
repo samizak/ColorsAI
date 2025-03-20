@@ -22,7 +22,7 @@ export function SignInForm() {
 
   // Handle redirection when session is available
   useEffect(() => {
-    if (session) {
+    if (session && searchParams) {
       const redirectedFrom = searchParams.get("redirectedFrom") || "/dashboard";
       router.replace(redirectedFrom);
     }
@@ -50,7 +50,7 @@ export function SignInForm() {
       }
 
       // Get the redirectedFrom parameter from the URL
-      const redirectedFrom = searchParams.get("redirectedFrom") || "/dashboard";
+      const redirectedFrom = searchParams?.get("redirectedFrom") || "/dashboard";
 
       // Force a hard refresh to ensure the session is properly set
       window.location.href = redirectedFrom;

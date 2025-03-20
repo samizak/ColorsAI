@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import Link from "next/link";
@@ -16,7 +16,8 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export default function AuthPage() {
+// Create a client component that uses useSearchParams
+function AuthContent() {
   const [activeTab, setActiveTab] = useState<"signin" | "register">("signin");
   const backLinkRef = useRef<HTMLAnchorElement>(null);
   const arrowRef = useRef<HTMLSpanElement>(null);
@@ -101,53 +102,63 @@ export default function AuthPage() {
             <Link
               ref={backLinkRef}
               href="/"
-              className="inline-flex items-center mb-6 text-gray-600 px-3 py-1 rounded-md"
+              className="inline-flex items-center text-gray-600 hover:text-purple-600 transition-colors"
             >
-              <span ref={arrowRef} className="mr-1">←</span>
-              <span ref={textRef}>Back to Home</span>
+              <span ref={arrowRef} className="mr-2">
+                ←
+              </span>
+              <span ref={textRef}>Back to home</span>
             </Link>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Welcome to Magical Coloring
-            </h1>
-            <p className="text-gray-600">
-              {activeTab === "signin"
-                ? "Sign in to access your coloring pages"
-                : "Create an account to start your coloring journey"}
-            </p>
+            <div className="mt-6">
+              <h1 className="text-3xl font-bold text-gray-900">
+                Magic Coloring
+              </h1>
+              <p className="text-gray-600 mt-2">
+                Create beautiful coloring pages with AI
+              </p>
+            </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex mb-6 bg-white rounded-lg p-1 shadow-sm">
-            <button
-              onClick={() => setActiveTab("signin")}
-              className={cn(
-                "flex-1 py-2 text-center rounded-md transition-all cursor-pointer",
-                activeTab === "signin"
-                  ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium shadow-md"
-                  : "text-gray-600 hover:text-gray-800"
-              )}
-            >
-              Sign In
-            </button>
-            <button
-              onClick={() => setActiveTab("register")}
-              className={cn(
-                "flex-1 py-2 text-center rounded-md transition-all cursor-pointer",
-                activeTab === "register"
-                  ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium shadow-md cursor-po"
-                  : "text-gray-600 hover:text-gray-800"
-              )}
-            >
-              Register
-            </button>
-          </div>
+          {/* Auth card */}
+          <div className="bg-white rounded-xl shadow-xl p-8 border border-gray-100">
+            {/* Tabs */}
+            <div className="flex border-b border-gray-200 mb-6">
+              <button
+                onClick={() => setActiveTab("signin")}
+                className={`px-4 py-2 font-medium text-sm mr-4 ${
+                  activeTab === "signin"
+                    ? "text-purple-600 border-b-2 border-purple-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => setActiveTab("register")}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === "register"
+                    ? "text-purple-600 border-b-2 border-purple-600"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                Register
+              </button>
+            </div>
 
-          {/* Form container */}
-          <div className="bg-white rounded-xl shadow-lg p-6 md:p-8">
+            {/* Form */}
             {activeTab === "signin" ? <SignInForm /> : <RegisterForm />}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+      <AuthContent />
+    </Suspense>
   );
 }
