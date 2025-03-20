@@ -5,13 +5,12 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { Clock, Heart, Edit, PlusCircle, Printer, PenTool } from "lucide-react";
+import { Clock, Heart, PlusCircle, Printer, PenTool } from "lucide-react";
 import { favoritesService } from "@/app/services/favorites";
+import { coloringPagesService } from "@/app/services/coloring-pages";
 
 // Components
 import Sidebar from "./components/Sidebar";
-import StatsSection from "./components/StatsSection";
-import TabButton from "./components/TabButton";
 import ColoringCard from "./components/ColoringCard";
 import EmptyState from "./components/EmptyState";
 import CreateSection from "./components/CreateSection";
@@ -32,28 +31,42 @@ export default function Dashboard() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [coloringPages, setColoringPages] = useState<any[]>([]);
+  const [userGeneratedPages, setUserGeneratedPages] = useState<any[]>([]);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Load favorites on mount
+  // Load data based on active tab
   useEffect(() => {
-    const loadFavorites = async () => {
+    const loadData = async () => {
+      setIsLoading(true);
       try {
+        // Load favorites regardless of tab
         const [favorites, count] = await Promise.all([
           favoritesService.getFavorites(),
-          favoritesService.getFavoriteCount()
+          favoritesService.getFavoriteCount(),
         ]);
         setFavoriteIds(favorites);
         setFavoriteCount(count);
+
+        // Load tab-specific data
+        if (activeTab === "recent") {
+          const recentPages = await coloringPagesService.getRecentPages();
+          setColoringPages(recentPages);
+        } else if (activeTab === "created") {
+          const generatedPages =
+            await coloringPagesService.getUserGeneratedPages();
+          setUserGeneratedPages(generatedPages);
+        }
       } catch (error) {
-        console.error('Error loading favorites:', error);
+        console.error("Error loading data:", error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadFavorites();
-  }, []);
+    loadData();
+  }, [activeTab]);
 
   // Animation for main content margin adjustment
   useEffect(() => {
@@ -70,25 +83,34 @@ export default function Dashboard() {
 
   const handleFavoriteChange = async (pageId: number, isFavorited: boolean) => {
     if (isFavorited) {
-      setFavoriteIds(prev => [...prev, pageId]);
-      setFavoriteCount(prev => prev + 1);
+      setFavoriteIds((prev) => [...prev, pageId]);
+      setFavoriteCount((prev) => prev + 1);
     } else {
-      setFavoriteIds(prev => prev.filter(id => id !== pageId));
-      setFavoriteCount(prev => prev - 1);
+      setFavoriteIds((prev) => prev.filter((id) => id !== pageId));
+      setFavoriteCount((prev) => prev - 1);
     }
   };
 
-  // Filter pages based on active tab
-  const filteredPages = COLORING_PAGES.filter(page => {
+  // Get pages based on active tab
+  const getDisplayedPages = () => {
     if (activeTab === "favorites") {
-      return favoriteIds.includes(page.id);
+      return coloringPages.filter((page) => favoriteIds.includes(page.id));
+    } else if (activeTab === "created") {
+      return userGeneratedPages;
+    } else {
+      return coloringPages;
     }
-    // Add more filters for other tabs if needed
-    return true;
-  });
+  };
+
+  const displayedPages = getDisplayedPages();
 
   return (
-    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
+    <div
+      className={cn(
+        "min-h-screen bg-gray-50 dark:bg-gray-900",
+        poppins.variable
+      )}
+    >
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -102,8 +124,12 @@ export default function Dashboard() {
         <main className="container mx-auto px-4 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Overview</h2>
-            <p className="text-gray-600 dark:text-gray-300">Track your coloring page statistics</p>
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Overview
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300">
+              Track your coloring page statistics
+            </p>
           </div>
 
           {/* Stats Grid */}
@@ -114,8 +140,12 @@ export default function Dashboard() {
                   <PlusCircle className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Total Pages</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">{COLORING_PAGES.length}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
+                    Total Pages
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {COLORING_PAGES.length}
+                  </p>
                 </div>
               </div>
             </div>
@@ -125,8 +155,12 @@ export default function Dashboard() {
                   <Heart className="h-6 w-6 text-pink-600 dark:text-pink-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Favorites</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">{favoriteIds.length}</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
+                    Favorites
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    {favoriteIds.length}
+                  </p>
                 </div>
               </div>
             </div>
@@ -136,8 +170,12 @@ export default function Dashboard() {
                   <Printer className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-500 dark:text-gray-300">Printed</p>
-                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">0</p>
+                  <p className="text-sm font-medium text-gray-500 dark:text-gray-300">
+                    Printed
+                  </p>
+                  <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+                    0
+                  </p>
                 </div>
               </div>
             </div>
@@ -145,38 +183,43 @@ export default function Dashboard() {
 
           {/* Your Coloring Pages */}
           <div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Coloring Pages</h3>
-            
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
+              Your Coloring Pages
+            </h3>
+
             {/* Tabs */}
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
               <button
+                onClick={() => setActiveTab("recent")}
                 className={cn(
                   "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200",
-                  "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                  "border-b-2 border-transparent",
-                  "hover:border-gray-300 dark:hover:border-gray-600"
+                  activeTab === "recent"
+                    ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
                 <Clock className="w-4 h-4" />
                 Recent
               </button>
               <button
+                onClick={() => setActiveTab("favorites")}
                 className={cn(
                   "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200",
-                  "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                  "border-b-2 border-transparent",
-                  "hover:border-gray-300 dark:hover:border-gray-600"
+                  activeTab === "favorites"
+                    ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
                 <Heart className="w-4 h-4" />
                 Favorites
               </button>
               <button
+                onClick={() => setActiveTab("created")}
                 className={cn(
                   "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200",
-                  "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white",
-                  "border-b-2 border-transparent",
-                  "hover:border-gray-300 dark:hover:border-gray-600"
+                  activeTab === "created"
+                    ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
+                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
                 <PenTool className="w-4 h-4" />
@@ -188,9 +231,9 @@ export default function Dashboard() {
               <div className="flex justify-center items-center py-12">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
               </div>
-            ) : filteredPages.length > 0 ? (
+            ) : displayedPages.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredPages.map((page) => (
+                {displayedPages.map((page) => (
                   <ColoringCard
                     key={page.id}
                     page={page}
