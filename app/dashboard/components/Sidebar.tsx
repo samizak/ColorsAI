@@ -90,7 +90,7 @@ const Sidebar = ({
     >
       <div className="flex flex-col h-full">
         {/* Header with logo and collapse button */}
-        <div className="h-[57px] flex items-center justify-between px-4 border-b border-gray-800">
+        <div className="h-[57px] flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-800">
           <Link
             href="/"
             className="text-xl font-bold text-gray-600 dark:text-white flex flex-row gap-2 justify-center items-center"
@@ -100,7 +100,7 @@ const Sidebar = ({
           </Link>
           <button
             onClick={toggleCollapse}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-600 dark:text-gray-400"
+            className="p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-400 dark:text-gray-500"
           >
             {isCollapsed ? (
               <ChevronRight size={20} />
@@ -118,7 +118,7 @@ const Sidebar = ({
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-purple-200 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-1",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-600 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-1",
                   isCollapsed ? "justify-center" : "justify-start"
                 )}
               >
