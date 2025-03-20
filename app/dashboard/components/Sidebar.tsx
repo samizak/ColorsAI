@@ -56,7 +56,10 @@ const Sidebar = ({
   // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node)
+      ) {
         setProfileMenuOpen(false);
       }
     };
@@ -90,7 +93,7 @@ const Sidebar = ({
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           <Link
             href="/"
-            className="text-xl font-bold text-purple-600 flex flex-row gap-2 justify-center items-center"
+            className="text-xl font-bold text-gray-600 dark:text-white flex flex-row gap-2 justify-center items-center"
           >
             <Image src="/logo.png" alt="ColorAI" width={32} height={32} />
             {!isCollapsed && <span>ColorAI</span>}
@@ -99,7 +102,11 @@ const Sidebar = ({
             onClick={toggleCollapse}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-600 dark:text-gray-400"
           >
-            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+            {isCollapsed ? (
+              <ChevronRight size={20} />
+            ) : (
+              <ChevronLeft size={20} />
+            )}
           </button>
         </div>
 
@@ -123,7 +130,7 @@ const Sidebar = ({
 
           {/* User profile section */}
           <div
-            className="border-t border-gray-200 dark:border-gray-800 pt-2 cursor-pointer"
+            className="border-t border-gray-200 dark:border-gray-800 pt-2"
             ref={profileMenuRef}
           >
             <button
@@ -171,13 +178,17 @@ const Sidebar = ({
                       {user?.email || "user@email.com"}
                     </p>
                   </div>
-                  
+
                   {/* Menu items */}
-                  <MenuLink href="/profile" icon={<User size={16} />} label="Your Profile" />
-                  
+                  <MenuLink
+                    href="/profile"
+                    icon={<User size={16} />}
+                    label="Your Profile"
+                  />
+
                   {/* Dark Mode Toggle */}
                   <div
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between cursor-pointer"
+                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center justify-between cursor-pointer"
                     onClick={toggleTheme}
                   >
                     <div className="flex items-center gap-2">
@@ -186,12 +197,16 @@ const Sidebar = ({
                     </div>
                     <ThemeToggle isDarkMode={isDarkMode} />
                   </div>
-                  
-                  <MenuLink href="/settings" icon={<Settings size={16} />} label="Settings" />
-                  
+
+                  <MenuLink
+                    href="/settings"
+                    icon={<Settings size={16} />}
+                    label="Settings"
+                  />
+
                   <button
                     onClick={handleSignOut}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center gap-2 cursor-pointer"
                   >
                     <LogOut size={16} />
                     Sign out
@@ -207,10 +222,18 @@ const Sidebar = ({
 };
 
 // Helper components
-const MenuLink = ({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) => (
+const MenuLink = ({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+}) => (
   <Link
     href={href}
-    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
   >
     {icon}
     {label}

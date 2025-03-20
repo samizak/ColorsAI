@@ -35,7 +35,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
             {prompt && (
               <button
                 onClick={() => setPrompt("")}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer"
               >
                 <svg
                   className="w-5 h-5"
@@ -57,7 +57,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
             onClick={onGenerate}
             disabled={isGenerating || !prompt.trim()}
             className={cn(
-              "p-3 rounded-lg flex items-center justify-center",
+              "p-3 rounded-lg flex items-center justify-center cursor-pointer",
               isGenerating || !prompt.trim()
                 ? "bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 : "bg-purple-600 text-white hover:bg-purple-700"
