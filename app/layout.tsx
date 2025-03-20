@@ -1,8 +1,5 @@
 import "./globals.css";
-import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
-import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
-import { ThemeProvider } from "@/components/providers/theme-provider";
-import { ToastContainer } from "@/components/ui/Toast";
+import { Providers } from "./providers";
 
 export default function RootLayout({
   children,
@@ -12,12 +9,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SupabaseProvider>
-          <ThemeProvider>
-            <SmoothScrollProvider>{children}</SmoothScrollProvider>
-          </ThemeProvider>
-        </SupabaseProvider>
-        <ToastContainer />
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );
