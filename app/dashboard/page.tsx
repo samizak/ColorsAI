@@ -8,12 +8,14 @@ import gsap from "gsap";
 import { Heart, PlusCircle, Printer, PenTool } from "lucide-react";
 import { favoritesService } from "@/app/services/favorites";
 import { coloringPagesService } from "@/app/services/coloring-pages";
+import { ColoringPage } from "@/app/services/coloring-pages";
 
 // Components
 import Sidebar from "./components/Sidebar";
 import ColoringCard from "./components/ColoringCard";
 import EmptyState from "./components/EmptyState";
 import CreateSection from "./components/CreateSection";
+import ColoringCardSkeleton from "./components/ColoringCardSkeleton";
 
 import { TabType } from "./components/types";
 
@@ -29,9 +31,14 @@ export default function Dashboard() {
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [coloringPages, setColoringPages] = useState<any[]>([]);
-  const [userGeneratedPages, setUserGeneratedPages] = useState<any[]>([]);
+  const [coloringPages, setColoringPages] = useState<ColoringPage[]>([]);
+  const [userGeneratedPages, setUserGeneratedPages] = useState<ColoringPage[]>([]);
   const [totalPagesCount, setTotalPagesCount] = useState(0);
+  const [loadedPages, setLoadedPages] = useState<ColoringPage[]>([]);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -47,14 +54,17 @@ export default function Dashboard() {
         setFavoriteIds(favorites);
         setFavoriteCount(count);
         setTotalPagesCount(totalCount);
+        setHasMore(totalCount > ITEMS_PER_PAGE);
 
+        // Load initial batch of pages
         if (activeTab === "created") {
-          const generatedPages =
-            await coloringPagesService.getUserGeneratedPages();
-          setUserGeneratedPages(generatedPages);
+          const initialPages = await coloringPagesService.getUserGeneratedPages(1, ITEMS_PER_PAGE);
+          setUserGeneratedPages(initialPages);
+          setLoadedPages(initialPages);
         } else if (activeTab === "favorites") {
-          const recentPages = await coloringPagesService.getRecentPages();
-          setColoringPages(recentPages);
+          const initialPages = await coloringPagesService.getRecentPages(1, ITEMS_PER_PAGE);
+          setColoringPages(initialPages);
+          setLoadedPages(initialPages);
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -85,6 +95,34 @@ export default function Dashboard() {
     } else {
       setFavoriteIds((prev) => prev.filter((id) => id !== pageId));
       setFavoriteCount((prev) => prev - 1);
+    }
+  };
+
+  const loadMorePages = async () => {
+    if (isLoadingMore || !hasMore) return;
+
+    setIsLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      let newPages: ColoringPage[];
+
+      if (activeTab === "created") {
+        newPages = await coloringPagesService.getUserGeneratedPages(nextPage, ITEMS_PER_PAGE);
+        setUserGeneratedPages(prev => [...prev, ...newPages]);
+      } else if (activeTab === "favorites") {
+        newPages = await coloringPagesService.getRecentPages(nextPage, ITEMS_PER_PAGE);
+        setColoringPages(prev => [...prev, ...newPages]);
+      } else {
+        newPages = [];
+      }
+
+      setLoadedPages(prev => [...prev, ...newPages]);
+      setHasMore(newPages.length === ITEMS_PER_PAGE);
+      setPage(nextPage);
+    } catch (error) {
+      console.error("Error loading more pages:", error);
+    } finally {
+      setIsLoadingMore(false);
     }
   };
 
@@ -223,22 +261,44 @@ export default function Dashboard() {
             </div>
 
             {isLoading ? (
-              <div className="flex justify-center items-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-              </div>
-            ) : displayedPages.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {displayedPages.map((page) => (
-                  <ColoringCard
-                    key={page.id}
-                    page={page}
-                    onEdit={(id) => router.push(`/edit/${id}`)}
-                    initialFavorited={favoriteIds.includes(page.id)}
-                    onFavoriteChange={handleFavoriteChange}
-                    onDelete={handleDeletePage}
-                  />
+                {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+                  <ColoringCardSkeleton key={index} />
                 ))}
               </div>
+            ) : loadedPages.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {loadedPages.map((page) => (
+                    <ColoringCard
+                      key={page.id}
+                      page={page}
+                      onEdit={(id) => router.push(`/edit/${id}`)}
+                      initialFavorited={favoriteIds.includes(page.id)}
+                      onFavoriteChange={handleFavoriteChange}
+                      onDelete={handleDeletePage}
+                    />
+                  ))}
+                </div>
+                {hasMore && (
+                  <div className="flex justify-center mt-8">
+                    <button
+                      onClick={loadMorePages}
+                      disabled={isLoadingMore}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Loading...
+                        </>
+                      ) : (
+                        'Load More'
+                      )}
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <EmptyState onCreateNew={() => handleCreateNew()} />
             )}

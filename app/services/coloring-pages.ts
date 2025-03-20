@@ -1,38 +1,52 @@
 import { createClient } from "@/utils/superbase/client";
 
+export interface ColoringPage {
+  id: number;
+  title: string;
+  image: string;
+  user_id: string;
+  is_ai_generated: boolean;
+  created_at: string;
+}
+
 export const coloringPagesService = {
-  async getUserGeneratedPages() {
+  async getUserGeneratedPages(page: number = 1, limit: number = 12) {
     const supabase = createClient();
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
 
     const { data, error } = await supabase
       .from("coloring_pages")
       .select("*")
       .eq("is_ai_generated", true)
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .range(start, end);
 
     if (error) {
       console.error("Error fetching user generated pages:", error);
       throw error;
     }
 
-    return data || [];
+    return (data || []) as ColoringPage[];
   },
 
-  async getRecentPages() {
+  async getRecentPages(page: number = 1, limit: number = 12) {
     const supabase = createClient();
+    const start = (page - 1) * limit;
+    const end = start + limit - 1;
 
     const { data, error } = await supabase
       .from("coloring_pages")
       .select("*")
       .order("created_at", { ascending: false })
-      .limit(20);
+      .range(start, end);
 
     if (error) {
       console.error("Error fetching recent pages:", error);
       throw error;
     }
 
-    return data || [];
+    return (data || []) as ColoringPage[];
   },
 
   async getAllColoringPages() {
