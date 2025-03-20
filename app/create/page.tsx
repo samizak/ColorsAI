@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // Replace react-hot-toast with sonner
+import { showToast } from "@/components/ui/Toast";
 import gsap from "gsap";
 import { Send, Sparkles, X, Loader2 } from "lucide-react";
 
@@ -36,6 +36,7 @@ export default function CreatePage() {
     }
   }, [sidebarCollapsed]);
 
+  // Update the handleGenerateImage function
   const handleGenerateImage = async () => {
     if (!prompt.trim()) return;
 
@@ -61,16 +62,14 @@ export default function CreatePage() {
 
       // Handle the saved image information
       if (data.savedImage) {
-        // Show a success message with Sonner
-        toast.success("Image saved to your collection!", {
+        // Show a success message with our custom toast
+        showToast.success("Image saved to your collection!", {
           description: "You can find it in your dashboard.",
           action: {
             label: "View",
             onClick: () => router.push("/dashboard"),
           },
         });
-
-        console.log("Toast success");
 
         // You can store the ID for later use
         const imageId = data.savedImage.id;
@@ -84,11 +83,11 @@ export default function CreatePage() {
         }
       } else if (data.message) {
         // Show informational message
-        toast.info(data.message);
+        showToast.info(data.message);
       }
     } catch (error) {
       console.error("Error generating image:", error);
-      toast.error("Failed to generate image", {
+      showToast.error("Failed to generate image", {
         description: "Please try again later.",
       });
     } finally {
@@ -98,7 +97,7 @@ export default function CreatePage() {
 
   // Add this to suppress hydration warnings
   const [isClient, setIsClient] = useState(false);
-  
+
   useEffect(() => {
     // Mark as client-side rendered after hydration
     setIsClient(true);
