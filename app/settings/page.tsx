@@ -13,22 +13,23 @@ export default function SettingsPage() {
             <Construction className="w-12 h-12 text-yellow-600 dark:text-yellow-400" />
           </div>
         </div>
-        
+
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Settings Page
         </h1>
-        
+
         <div className="flex items-center justify-center mb-4">
           <SettingsIcon className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
           <p className="text-gray-500 dark:text-gray-400">Under Construction</p>
         </div>
-        
+
         <p className="text-gray-600 dark:text-gray-300 mb-8">
-          We're working hard to build this page. Please check back soon for updates!
+          We&apos;re working hard to build this page. Please check back soon for
+          updates!
         </p>
-        
-        <Link 
-          href="/dashboard" 
+
+        <Link
+          href="/dashboard"
           className="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-md transition-colors cursor-pointer"
         >
           Return to Dashboard

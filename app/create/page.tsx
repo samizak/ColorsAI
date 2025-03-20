@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { showToast } from "@/components/ui/Toast";
 import gsap from "gsap";
 import { Send, Sparkles, X, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 // Components
 import Sidebar from "../dashboard/components/Sidebar";
@@ -134,13 +135,16 @@ export default function CreatePage() {
               will create it for you.
             </p>
 
+            {/* Inside the component where the img tag is used: */}
             {generatedImage ? (
               <div className="mb-4 flex-1 flex flex-col min-h-0">
                 <div className="relative w-full flex-1 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
-                  <img
+                  <Image
                     src={generatedImage}
                     alt="Generated coloring page"
-                    className="w-full h-full object-contain"
+                    fill
+                    className="object-contain"
+                    unoptimized // Since we're using a data URL
                   />
                 </div>
               </div>
@@ -160,7 +164,8 @@ export default function CreatePage() {
                       Enter a prompt below to generate your coloring page
                     </p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                      For example: "A magical forest with unicorns and fairies"
+                      For example: &quot;A magical forest with unicorns and
+                      fairies&quot;
                     </p>
                   </div>
                 )}

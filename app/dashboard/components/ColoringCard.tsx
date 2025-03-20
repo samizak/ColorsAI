@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { favoritesService } from "@/app/services/favorites";
 import { coloringPagesService } from "@/app/services/coloring-pages";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
+import Image from "next/image";
 
 interface ColoringCardProps {
   page: {
@@ -62,14 +63,15 @@ export default function ColoringCard({
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md">
-        <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
-          <img
+      <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md group">
+        <div className="relative aspect-square rounded-t-lg overflow-hidden">
+          <Image
             src={page.image}
             alt={page.title}
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover transition-all duration-300 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200">
             <div className="absolute bottom-3 left-3 flex gap-2">
               <button
                 onClick={() => onEdit(page.id)}

@@ -60,7 +60,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase.auth]);
+  }, []);
 
   const signOut = async () => {
     try {
@@ -71,14 +71,14 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
         console.error("Error during sign out:", error);
         throw error;
       }
-      
+
       // Clear local state
       setUser(null);
       setSession(null);
       console.log("SupabaseProvider: Successfully signed out");
-      
+
       // Use router for navigation after state is cleared
-      window.location.href = '/auth';
+      window.location.href = "/auth";
     } catch (err) {
       console.error("Exception during sign out:", err);
       throw err;

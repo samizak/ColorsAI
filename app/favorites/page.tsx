@@ -13,22 +13,23 @@ export default function FavouritePage() {
             <Heart className="w-12 h-12 text-pink-600 dark:text-pink-400" />
           </div>
         </div>
-        
+
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           Favourites Page
         </h1>
-        
+
         <div className="flex items-center justify-center mb-4">
           <Construction className="w-5 h-5 text-gray-500 dark:text-gray-400 mr-2" />
           <p className="text-gray-500 dark:text-gray-400">Under Construction</p>
         </div>
-        
+
         <p className="text-gray-600 dark:text-gray-300 mb-8">
-          We're building a special place for all your favourite coloring pages. Check back soon!
+          We&apos;re building a special place for all your favourite coloring
+          pages. Check back soon!
         </p>
-        
-        <Link 
-          href="/dashboard" 
+
+        <Link
+          href="/dashboard"
           className="inline-flex items-center px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-md transition-colors cursor-pointer"
         >
           Return to Dashboard
