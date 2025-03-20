@@ -101,10 +101,10 @@ export default function Dashboard() {
 
       <div
         ref={mainContentRef}
-        className="transition-all duration-300 flex flex-col h-screen"
+        className="transition-all duration-300 min-h-screen bg-gray-50 dark:bg-gray-900"
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
-        <main className="container mx-auto px-4 py-8 flex-1">
+        <main className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
