@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Heart, Edit, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { favoritesService } from "@/app/services/favorites";
@@ -31,9 +31,19 @@ export default function ColoringCard({
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const pendingRequest = useRef<boolean>(false);
   const lastClickTime = useRef<number>(0);
+  const isMounted = useRef(true);
   const CLICK_DELAY = 500; // Minimum time between clicks (500ms)
 
-  const handleFavoriteClick = async () => {
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  const handleFavoriteClick = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent event bubbling
+    
     const now = Date.now();
     if (pendingRequest.current || now - lastClickTime.current < CLICK_DELAY) {
       return; // Prevent rapid clicking and concurrent requests
@@ -50,13 +60,23 @@ export default function ColoringCard({
     try {
       // Make the API call in the background
       await favoritesService.toggleFavorite(page.id);
+      
+      // Only update state if component is still mounted
+      if (isMounted.current) {
+        setIsFavorited(newFavoritedState);
+        onFavoriteChange(page.id, newFavoritedState);
+      }
     } catch (error) {
-      // If the API call fails, revert the optimistic update
-      console.error("Error toggling favorite:", error);
-      setIsFavorited(!newFavoritedState);
-      onFavoriteChange(page.id, !newFavoritedState);
+      // Only revert state if component is still mounted
+      if (isMounted.current) {
+        console.error("Error toggling favorite:", error);
+        setIsFavorited(!newFavoritedState);
+        onFavoriteChange(page.id, !newFavoritedState);
+      }
     } finally {
-      pendingRequest.current = false;
+      if (isMounted.current) {
+        pendingRequest.current = false;
+      }
     }
   };
 
@@ -69,12 +89,18 @@ export default function ColoringCard({
     setIsDeleting(true);
     try {
       await coloringPagesService.deleteColoringPage(page.id);
-      onDelete(page.id);
+      if (isMounted.current) {
+        onDelete(page.id);
+      }
     } catch (error) {
-      console.error("Error deleting coloring page:", error);
+      if (isMounted.current) {
+        console.error("Error deleting coloring page:", error);
+      }
     } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
+      if (isMounted.current) {
+        setIsDeleting(false);
+        setShowDeleteModal(false);
+      }
     }
   };
 
