@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useSupabase } from "@/components/providers/SupabaseProvider";
 import gsap from "gsap";
@@ -80,11 +81,13 @@ const Sidebar = ({
     >
       <div className="flex flex-col h-full">
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-          {!isCollapsed && (
-            <Link href="/" className="text-xl font-bold text-purple-600">
-              MC
-            </Link>
-          )}
+          <Link
+            href="/"
+            className="text-xl font-bold text-purple-600 flex flex-row gap-2 justify-center items-center"
+          >
+            <Image src="/logo.png" alt="ColorAI" width={32} height={32} />
+            {!isCollapsed && <span>ColorAI</span>}
+          </Link>
           <button
             onClick={toggleCollapse}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-600 dark:text-gray-400"
@@ -170,9 +173,9 @@ const Sidebar = ({
                     <User size={16} />
                     Your Profile
                   </Link>
-                  
+
                   {/* Dark Mode Toggle */}
-                  <div 
+                  <div
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between cursor-pointer"
                     onClick={toggleTheme}
                   >
@@ -196,7 +199,7 @@ const Sidebar = ({
                       ></label>
                     </div>
                   </div>
-                  
+
                   <Link
                     href="/settings"
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
@@ -228,4 +231,5 @@ const Sidebar = ({
   );
 };
 
+// Add the default export
 export default Sidebar;
