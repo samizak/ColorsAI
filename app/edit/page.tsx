@@ -172,14 +172,14 @@ export default function EditPage() {
           isDeleting={isDeleting}
         />
 
-        <main className="container mx-auto px-4 py-4 sm:py-8 flex-1">
+        <main className="container mx-auto px-4 py-4 sm:py-8 flex-1 flex flex-col">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4 sm:mb-6">
             Edit Coloring Page
           </h1>
 
           {error && <ErrorMessage message={error} />}
 
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 flex-1">
             <ImageEditor
               isLoading={isLoading}
               imageData={imageData}

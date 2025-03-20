@@ -89,11 +89,11 @@ export default function ImageEditor({
   }, [isPanning, isDragging]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full h-full">
       {/* Image Container */}
       <div 
         ref={containerRef}
-        className="relative w-full aspect-square sm:aspect-[4/3] md:aspect-[16/9] overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
+        className="relative w-full h-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
       >
@@ -127,7 +127,7 @@ export default function ImageEditor({
           onClick={onZoomOut}
           disabled={zoom <= 0.5}
           className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
+            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
           title="Zoom Out"
@@ -141,7 +141,7 @@ export default function ImageEditor({
           onClick={onZoomIn}
           disabled={zoom >= 2}
           className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
+            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
           title="Zoom In"
@@ -156,7 +156,7 @@ export default function ImageEditor({
             setPosition({ x: 0, y: 0 }); // Reset position when toggling pan mode
           }}
           className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
+            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer",
             isPanning && "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
           )}
           title="Pan"
@@ -165,7 +165,7 @@ export default function ImageEditor({
         </button>
         <button
           onClick={onRotate}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
           title="Rotate"
         >
           <RotateCw className="w-5 h-5" />
