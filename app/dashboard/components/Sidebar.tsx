@@ -70,7 +70,6 @@ const Sidebar = ({
     { icon: <Home size={20} />, label: "Dashboard", href: "/dashboard" },
     { icon: <PlusCircle size={20} />, label: "Create", href: "/create" },
     { icon: <LucideImage size={20} />, label: "Gallery", href: "/gallery" },
-    { icon: <Heart size={20} />, label: "Favorites", href: "/favorites" },
   ];
 
   return (
