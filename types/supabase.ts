@@ -32,6 +32,35 @@ export interface Database {
           avatar_url?: string | null
         }
       }
+      coloring_pages: {
+        Row: {
+          id: number
+          title: string
+          image: string
+          user_id: string
+          is_ai_generated: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          title: string
+          image: string
+          user_id: string
+          is_ai_generated?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          title?: string
+          image?: string
+          user_id?: string
+          is_ai_generated?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -43,4 +72,4 @@ export interface Database {
       [_ in never]: never
     }
   }
-} 
+}
