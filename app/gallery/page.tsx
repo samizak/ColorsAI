@@ -87,22 +87,17 @@ export default function GalleryPage() {
   };
 
   return (
-    <div
-      className={cn(
-        "min-h-screen bg-gray-50 dark:bg-gray-900",
-        poppins.variable
-      )}
-    >
+    <div className={cn("flex min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-
-      <div
-        className="transition-all duration-300 flex flex-col h-screen"
+      
+      <main 
+        className="flex-1"
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
-        <main className="container mx-auto px-4 py-8 flex-1 overflow-auto">
+        <div className="container mx-auto px-4 py-8">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">
               Coloring Gallery
@@ -168,8 +163,8 @@ export default function GalleryPage() {
               </p>
             </div>
           )}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }
