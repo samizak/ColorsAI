@@ -3,14 +3,15 @@ import { createClient } from "@/utils/superbase/server";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const id = (await params).id
     const supabase = await createClient();
     const { data, error } = await supabase
       .from("coloring_pages")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .single();
 
     if (error) {
@@ -36,16 +37,17 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const id = (await params).id
     const supabase = await createClient();
     const { title, image } = await request.json();
 
     const { data, error } = await supabase
       .from("coloring_pages")
       .update({ title, image })
-      .eq("id", params.id)
+      .eq("id", id)
       .select()
       .single();
 

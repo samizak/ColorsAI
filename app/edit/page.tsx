@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import gsap from "gsap";
@@ -20,7 +20,8 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-export default function EditPage() {
+// Separate client component to handle search params
+function EditPageContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -202,5 +203,18 @@ export default function EditPage() {
         message="Are you sure you want to delete this coloring page? This action cannot be undone and will remove the page from your dashboard and gallery."
       />
     </div>
+  );
+}
+
+// Main page component with Suspense boundary
+export default function EditPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 dark:border-white"></div>
+      </div>
+    }>
+      <EditPageContent />
+    </Suspense>
   );
 } 
