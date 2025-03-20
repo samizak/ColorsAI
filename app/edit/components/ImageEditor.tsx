@@ -1,6 +1,7 @@
 import { Loader2, ZoomIn, ZoomOut, RotateCw, Move } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 
 interface ImageEditorProps {
   isLoading: boolean;
@@ -47,25 +48,25 @@ export default function ImageEditor({
     }
   };
 
-  const handleMouseMove = (e: MouseEvent | TouchEvent) => {
+  const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
     if (!isPanning || !isDragging) return;
     
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+    const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
+    const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
     
     setPosition({
       x: clientX - dragStart.x,
       y: clientY - dragStart.y
     });
-  };
+  }, [isPanning, isDragging, dragStart]);
 
-  const handleMouseUp = () => {
+  const handleMouseUp = useCallback(() => {
     setIsDragging(false);
     const container = containerRef.current;
     if (container) {
       container.style.cursor = isPanning ? 'grab' : 'default';
     }
-  };
+  }, [isPanning]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -73,12 +74,10 @@ export default function ImageEditor({
 
     container.style.cursor = isPanning ? 'grab' : 'default';
 
-    if (isPanning) {
-      window.addEventListener('mousemove', handleMouseMove);
-      window.addEventListener('mouseup', handleMouseUp);
-      window.addEventListener('touchmove', handleMouseMove);
-      window.addEventListener('touchend', handleMouseUp);
-    }
+    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('touchmove', handleMouseMove);
+    window.addEventListener('touchend', handleMouseUp);
 
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
@@ -86,7 +85,7 @@ export default function ImageEditor({
       window.removeEventListener('touchmove', handleMouseMove);
       window.removeEventListener('touchend', handleMouseUp);
     };
-  }, [isPanning, isDragging]);
+  }, [isPanning, isDragging, handleMouseMove, handleMouseUp]);
 
   return (
     <div className="relative w-full h-full">
@@ -103,16 +102,21 @@ export default function ImageEditor({
           </div>
         ) : imageData ? (
           <div className="relative w-full h-full flex items-center justify-center">
-            <img
-              src={imageData}
-              alt={title}
-              className="max-w-full max-h-full object-contain transition-transform duration-300"
-              style={{
-                transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
-                cursor: isPanning ? (isDragging ? 'grabbing' : 'grab') : 'default'
-              }}
-              draggable={false}
-            />
+            <div className="relative w-full h-full">
+              <Image
+                src={imageData}
+                alt={title}
+                className="object-contain transition-transform duration-300"
+                fill
+                unoptimized // Required for base64 images
+                priority // Load this image immediately
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
+                  cursor: isPanning ? (isDragging ? 'grabbing' : 'grab') : 'default'
+                }}
+                draggable={false}
+              />
+            </div>
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -127,7 +131,7 @@ export default function ImageEditor({
           onClick={onZoomOut}
           disabled={zoom <= 0.5}
           className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer",
+            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
           title="Zoom Out"
@@ -141,7 +145,7 @@ export default function ImageEditor({
           onClick={onZoomIn}
           disabled={zoom >= 2}
           className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer",
+            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
             "disabled:opacity-50 disabled:cursor-not-allowed"
           )}
           title="Zoom In"
@@ -156,7 +160,7 @@ export default function ImageEditor({
             setPosition({ x: 0, y: 0 }); // Reset position when toggling pan mode
           }}
           className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer",
+            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
             isPanning && "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
           )}
           title="Pan"
@@ -165,7 +169,7 @@ export default function ImageEditor({
         </button>
         <button
           onClick={onRotate}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           title="Rotate"
         >
           <RotateCw className="w-5 h-5" />

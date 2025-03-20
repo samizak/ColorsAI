@@ -22,7 +22,7 @@ const GenerationPlaceholder: React.FC<GenerationPlaceholderProps> = ({ isGenerat
             Enter a prompt below to generate your coloring page
           </p>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            For example: "A magical forest with unicorns and fairies"
+            For example: &quot;A magical forest with unicorns and fairies&quot;
           </p>
         </div>
       )}
