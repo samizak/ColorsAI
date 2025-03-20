@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { createClient } from "@/utils/superbase/client";
 import { User, Session } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 type SupabaseContextType = {
   user: User | null;
@@ -23,65 +23,92 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
-    const getSession = async () => {
-      setIsLoading(true);
+    let mounted = true;
 
+    // Get initial session
+    const initializeAuth = async () => {
       try {
         const {
-          data: { session },
+          data: { session: initialSession },
           error,
         } = await supabase.auth.getSession();
 
         if (error) {
-          throw error;
+          console.error("Error getting initial session:", error);
+          return;
         }
 
-        setSession(session);
-        setUser(session?.user || null);
+        if (mounted) {
+          console.log("Initial session:", initialSession);
+          if (initialSession?.user) {
+            setSession(initialSession);
+            setUser(initialSession.user);
+          }
+          setIsLoading(false);
+        }
       } catch (error) {
-        console.error("Error getting session:", error);
-      } finally {
-        setIsLoading(false);
+        console.error("Error initializing auth:", error);
       }
     };
 
-    getSession();
+    initializeAuth();
 
+    // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user || null);
-      setIsLoading(false);
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, "Session:", session);
+
+      if (mounted) {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          if (session?.user) {
+            setSession(session);
+            setUser(session.user);
+          }
+        } else if (event === "SIGNED_OUT") {
+          setSession(null);
+          setUser(null);
+          // Force navigation to auth page on sign out
+          router.push("/auth");
+        } else if (event === "INITIAL_SESSION" && session?.user) {
+          // Only update if we have a valid user
+          setSession(session);
+          setUser(session.user);
+        }
+        setIsLoading(false);
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [router]);
 
   const signOut = async () => {
     try {
       console.log("SupabaseProvider: Signing out");
-      const client = createClient();
-      const { error } = await client.auth.signOut();
+      // Clear local state first
+      setUser(null);
+      setSession(null);
+
+      // Then sign out from Supabase
+      const { error } = await supabase.auth.signOut();
       if (error) {
         console.error("Error during sign out:", error);
         throw error;
       }
 
-      // Clear local state
-      setUser(null);
-      setSession(null);
       console.log("SupabaseProvider: Successfully signed out");
-
-      // Use router for navigation after state is cleared
-      window.location.href = "/auth";
+      // Use router for navigation
+      router.push("/auth");
     } catch (err) {
       console.error("Exception during sign out:", err);
-      throw err;
+      // Even if there's an error, try to navigate to auth page
+      router.push("/auth");
     }
   };
 
