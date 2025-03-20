@@ -6,8 +6,7 @@ import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
 import { Heart, PlusCircle, Printer, PenTool } from "lucide-react";
-import { favoritesService } from "@/app/services/favorites";
-import { coloringPagesService } from "@/app/services/coloring-pages";
+import { useColoringPages } from "@/app/hooks/useColoringPages";
 import { ColoringPage } from "@/app/services/coloring-pages";
 
 // Components
@@ -25,57 +24,28 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
+const ITEMS_PER_PAGE = 12;
+
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
-  const [favoriteCount, setFavoriteCount] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [coloringPages, setColoringPages] = useState<ColoringPage[]>([]);
-  const [userGeneratedPages, setUserGeneratedPages] = useState<ColoringPage[]>([]);
-  const [totalPagesCount, setTotalPagesCount] = useState(0);
-  const [loadedPages, setLoadedPages] = useState<ColoringPage[]>([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 12;
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        const [favorites, count, totalCount] = await Promise.all([
-          favoritesService.getFavorites(),
-          favoritesService.getFavoriteCount(),
-          coloringPagesService.getTotalPagesCount(),
-        ]);
-        setFavoriteIds(favorites);
-        setFavoriteCount(count);
-        setTotalPagesCount(totalCount);
-        setHasMore(totalCount > ITEMS_PER_PAGE);
+  const {
+    pages,
+    favoriteIds,
+    userPages,
+    isLoading,
+    error,
+    mutatePages,
+    mutateFavorites,
+    mutateUserPages,
+    toggleFavorite,
+  } = useColoringPages(page, ITEMS_PER_PAGE, activeTab);
 
-        // Load initial batch of pages
-        if (activeTab === "created") {
-          const initialPages = await coloringPagesService.getUserGeneratedPages(1, ITEMS_PER_PAGE);
-          setUserGeneratedPages(initialPages);
-          setLoadedPages(initialPages);
-        } else if (activeTab === "favorites") {
-          const initialPages = await coloringPagesService.getRecentPages(1, ITEMS_PER_PAGE);
-          setColoringPages(initialPages);
-          setLoadedPages(initialPages);
-        }
-      } catch (error) {
-        console.error("Error loading data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, [activeTab]);
-
+  // Animation for sidebar collapse
   useEffect(() => {
     if (mainContentRef.current) {
       gsap.to(mainContentRef.current, {
@@ -89,74 +59,41 @@ export default function Dashboard() {
   const handleCreateNew = (path: string = "/create") => router.push(path);
 
   const handleFavoriteChange = async (pageId: number, isFavorited: boolean) => {
-    // Optimistically update the UI
-    if (isFavorited) {
-      setFavoriteIds((prev) => [...prev, pageId]);
-      setFavoriteCount((prev) => prev + 1);
-    } else {
-      setFavoriteIds((prev) => prev.filter((id) => id !== pageId));
-      setFavoriteCount((prev) => prev - 1);
+    try {
+      await toggleFavorite(pageId);
+    } catch (error) {
+      console.error("Error updating favorite:", error);
     }
   };
 
-  const loadMorePages = async () => {
-    if (isLoadingMore || !hasMore) return;
-
-    setIsLoadingMore(true);
-    try {
-      const nextPage = page + 1;
-      let newPages: ColoringPage[];
-
-      if (activeTab === "created") {
-        newPages = await coloringPagesService.getUserGeneratedPages(nextPage, ITEMS_PER_PAGE);
-        setUserGeneratedPages(prev => [...prev, ...newPages]);
-      } else if (activeTab === "favorites") {
-        newPages = await coloringPagesService.getRecentPages(nextPage, ITEMS_PER_PAGE);
-        setColoringPages(prev => [...prev, ...newPages]);
-      } else {
-        newPages = [];
-      }
-
-      setLoadedPages(prev => [...prev, ...newPages]);
-      setHasMore(newPages.length === ITEMS_PER_PAGE);
-      setPage(nextPage);
-    } catch (error) {
-      console.error("Error loading more pages:", error);
-    } finally {
-      setIsLoadingMore(false);
+  const handleDeletePage = async (pageId: number) => {
+    // Update all caches to remove the deleted page
+    mutatePages((prevPages: ColoringPage[] = []) => 
+      prevPages.filter(page => page.id !== pageId)
+    );
+    mutateUserPages((prevPages: ColoringPage[] = []) => 
+      prevPages.filter(page => page.id !== pageId)
+    );
+    if (favoriteIds.includes(pageId)) {
+      mutateFavorites((prev: number[] = []) => 
+        prev.filter(id => id !== pageId)
+      );
     }
+  };
+
+  const loadMorePages = () => {
+    setPage(prev => prev + 1);
   };
 
   // Get pages based on active tab
-  const getDisplayedPages = () => {
-    if (activeTab === "favorites") {
-      return coloringPages.filter((page) => favoriteIds.includes(page.id));
-    } else if (activeTab === "created") {
-      return userGeneratedPages;
-    } else {
-      return [];
-    }
-  };
+  const displayedPages = activeTab === "favorites" 
+    ? (pages || []).filter(page => favoriteIds.includes(page.id))
+    : userPages || [];
 
-  const displayedPages = getDisplayedPages();
-
-  const handleDeletePage = (pageId: number) => {
-    setColoringPages((prev) => prev.filter((page) => page.id !== pageId));
-    setUserGeneratedPages((prev) => prev.filter((page) => page.id !== pageId));
-
-    if (favoriteIds.includes(pageId)) {
-      setFavoriteIds((prev) => prev.filter((id) => id !== pageId));
-      setFavoriteCount((prev) => prev - 1);
-    }
-  };
+  const hasMore = displayedPages.length === ITEMS_PER_PAGE * page;
 
   return (
-    <div
-      className={cn(
-        "min-h-screen bg-gray-50 dark:bg-gray-900",
-        poppins.variable
-      )}
-    >
+    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -164,21 +101,22 @@ export default function Dashboard() {
 
       <div
         ref={mainContentRef}
-        className="transition-all duration-300"
+        className="transition-all duration-300 flex flex-col h-screen"
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
-        <main className="container mx-auto px-4 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Overview
-            </h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Track your coloring page statistics
-            </p>
+        <main className="container mx-auto px-4 py-8 flex-1">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+                Your Coloring Pages
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
+                Manage and organize your coloring pages
+              </p>
+            </div>
           </div>
 
-          {/* Stats Grid */}
+          {/* Stats Section */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-4">
@@ -190,7 +128,7 @@ export default function Dashboard() {
                     Total Pages
                   </p>
                   <p className="text-2xl font-semibold text-gray-900 dark:text-white">
-                    {totalPagesCount}
+                    {(pages || []).length}
                   </p>
                 </div>
               </div>
@@ -227,13 +165,8 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Your Coloring Pages */}
-          <div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Your Coloring Pages
-            </h3>
-
-            {/* Tabs - Reordered and removed Recent tab */}
+          {/* Tabs */}
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
               <button
                 onClick={() => setActiveTab("created")}
@@ -244,7 +177,7 @@ export default function Dashboard() {
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
-                <PenTool className="w-4 h-4 " />
+                <PenTool className="w-4 h-4" />
                 Created by You
               </button>
               <button
@@ -267,10 +200,14 @@ export default function Dashboard() {
                   <ColoringCardSkeleton key={index} />
                 ))}
               </div>
-            ) : loadedPages.length > 0 ? (
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500">Error loading coloring pages</p>
+              </div>
+            ) : displayedPages && displayedPages.length > 0 ? (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                  {loadedPages.map((page) => (
+                  {displayedPages.map((page) => (
                     <ColoringCard
                       key={page.id}
                       page={page}
@@ -285,17 +222,9 @@ export default function Dashboard() {
                   <div className="flex justify-center mt-8">
                     <button
                       onClick={loadMorePages}
-                      disabled={isLoadingMore}
                       className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      {isLoadingMore ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Loading...
-                        </>
-                      ) : (
-                        'Load More'
-                      )}
+                      Load More
                     </button>
                   </div>
                 )}
@@ -303,9 +232,6 @@ export default function Dashboard() {
             ) : (
               <EmptyState onCreateNew={() => handleCreateNew()} />
             )}
-
-            {/* Create Section */}
-            <CreateSection onCreateNew={handleCreateNew} />
           </div>
         </main>
       </div>
