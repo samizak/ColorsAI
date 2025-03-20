@@ -96,6 +96,14 @@ export default function CreatePage() {
     }
   };
 
+  // Add this to suppress hydration warnings
+  const [isClient, setIsClient] = useState(false);
+  
+  useEffect(() => {
+    // Mark as client-side rendered after hydration
+    setIsClient(true);
+  }, []);
+
   return (
     <div
       className={cn(
