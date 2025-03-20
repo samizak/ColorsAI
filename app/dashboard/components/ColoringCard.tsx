@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Heart, Edit, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { favoritesService } from "@/app/services/favorites";
@@ -29,17 +29,34 @@ export default function ColoringCard({
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const pendingRequest = useRef<boolean>(false);
+  const lastClickTime = useRef<number>(0);
+  const CLICK_DELAY = 500; // Minimum time between clicks (500ms)
 
   const handleFavoriteClick = async () => {
-    setIsLoading(true);
+    const now = Date.now();
+    if (pendingRequest.current || now - lastClickTime.current < CLICK_DELAY) {
+      return; // Prevent rapid clicking and concurrent requests
+    }
+
+    lastClickTime.current = now;
+    pendingRequest.current = true;
+
+    // Optimistically update the UI
+    const newFavoritedState = !isFavorited;
+    setIsFavorited(newFavoritedState);
+    onFavoriteChange(page.id, newFavoritedState);
+
     try {
-      const newFavoritedState = await favoritesService.toggleFavorite(page.id);
-      setIsFavorited(newFavoritedState);
-      onFavoriteChange(page.id, newFavoritedState);
+      // Make the API call in the background
+      await favoritesService.toggleFavorite(page.id);
     } catch (error) {
+      // If the API call fails, revert the optimistic update
       console.error("Error toggling favorite:", error);
+      setIsFavorited(!newFavoritedState);
+      onFavoriteChange(page.id, !newFavoritedState);
     } finally {
-      setIsLoading(false);
+      pendingRequest.current = false;
     }
   };
 
@@ -96,9 +113,8 @@ export default function ColoringCard({
             </h4>
             <button
               onClick={handleFavoriteClick}
-              disabled={isLoading}
               className={cn(
-                "p-1.5 rounded-full transition-colors cursor-pointer",
+                "p-1.5 rounded-full transition-all duration-200 cursor-pointer transform hover:scale-110 active:scale-95",
                 isFavorited
                   ? "text-pink-500 dark:text-pink-400"
                   : "text-gray-400 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-400"
@@ -106,7 +122,7 @@ export default function ColoringCard({
             >
               <Heart
                 className={cn(
-                  "h-4 w-4",
+                  "h-4 w-4 transition-all duration-200",
                   isFavorited ? "fill-current" : "fill-none"
                 )}
               />

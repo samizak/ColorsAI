@@ -89,6 +89,7 @@ export default function Dashboard() {
   const handleCreateNew = (path: string = "/create") => router.push(path);
 
   const handleFavoriteChange = async (pageId: number, isFavorited: boolean) => {
+    // Optimistically update the UI
     if (isFavorited) {
       setFavoriteIds((prev) => [...prev, pageId]);
       setFavoriteCount((prev) => prev + 1);
