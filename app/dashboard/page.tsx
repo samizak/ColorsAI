@@ -104,6 +104,21 @@ export default function Dashboard() {
 
   const displayedPages = getDisplayedPages();
 
+  // Add this function to handle deletion
+  const handleDeletePage = (pageId: number) => {
+    // Remove from coloringPages
+    setColoringPages(prev => prev.filter(page => page.id !== pageId));
+    
+    // Remove from userGeneratedPages if it exists there
+    setUserGeneratedPages(prev => prev.filter(page => page.id !== pageId));
+    
+    // If it was a favorite, update the favorites count
+    if (favoriteIds.includes(pageId)) {
+      setFavoriteIds(prev => prev.filter(id => id !== pageId));
+      setFavoriteCount(prev => prev - 1);
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -240,6 +255,7 @@ export default function Dashboard() {
                     onEdit={(id) => router.push(`/edit/${id}`)}
                     initialFavorited={favoriteIds.includes(page.id)}
                     onFavoriteChange={handleFavoriteChange}
+                    onDelete={handleDeletePage}
                   />
                 ))}
               </div>
