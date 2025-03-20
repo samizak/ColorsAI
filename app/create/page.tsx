@@ -11,7 +11,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.NEXT_GEMINI_API_KEY as string);
 const model = genAI.getGenerativeModel({
-  model: "gemini-2.0-flash-exp-image-generation"
+  model: "gemini-2.0-flash-exp-image-generation",
 });
 
 const generationConfig = {
@@ -65,7 +65,7 @@ export default function CreatePage() {
 
     try {
       const response = await model.generateContent(prompt);
-      
+
       if (!response.response?.candidates?.[0]?.content?.parts) {
         throw new Error("Failed to generate image");
       }
@@ -91,7 +91,12 @@ export default function CreatePage() {
   };
 
   return (
-    <div className={cn("min-h-screen bg-gray-50", poppins.variable)}>
+    <div
+      className={cn(
+        "min-h-screen bg-gray-50 dark:bg-gray-900",
+        poppins.variable
+      )}
+    >
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -103,27 +108,18 @@ export default function CreatePage() {
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
         <main className="container mx-auto px-4 py-8 flex-1 overflow-hidden">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-6">
             Create a Coloring Page
           </h1>
 
-          <div className="bg-white rounded-xl shadow-md p-6 mb-8 flex flex-col h-[calc(100vh-13rem)] overflow-hidden">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8 flex flex-col h-[calc(100vh-13rem)] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">
               Text to Coloring Page
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Describe what you want to see in your coloring page, and our AI
               will create it for you.
             </p>
-
-            <div className="flex items-center gap-4 mb-8">
-              <div className="flex-1 h-1 bg-purple-100 rounded-full overflow-hidden">
-                <div className="h-full bg-purple-600 w-1/3"></div>
-              </div>
-              <span className="text-sm font-medium text-gray-600">
-                Step 1 of 3
-              </span>
-            </div>
 
             {generatedImage ? (
               <div className="mb-4 flex-1 flex flex-col min-h-0">
@@ -150,21 +146,21 @@ export default function CreatePage() {
                 </div>
               </div>
             ) : (
-              <div className="flex items-center justify-center flex-1 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300 mb-4 min-h-0">
+              <div className="flex items-center justify-center flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 mb-4 min-h-0">
                 {isGenerating ? (
                   <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600 mb-4"></div>
-                    <p className="text-gray-600">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-200 dark:border-purple-300/30 border-t-purple-600 mb-4"></div>
+                    <p className="text-gray-600 dark:text-gray-300">
                       Generating your coloring page...
                     </p>
                   </div>
                 ) : (
                   <div className="text-center p-6">
-                    <Sparkles className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-2">
+                    <Sparkles className="h-12 w-12 text-purple-400 dark:text-purple-300 mx-auto mb-4" />
+                    <p className="text-gray-600 dark:text-gray-300 mb-2">
                       Enter a prompt below to generate your coloring page
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       For example: "A magical forest with unicorns and fairies"
                     </p>
                   </div>
@@ -173,7 +169,7 @@ export default function CreatePage() {
             )}
 
             <div className="flex flex-col gap-2">
-              <h3 className="text-md font-medium text-gray-700">
+              <h3 className="text-md font-medium text-gray-700 dark:text-gray-300">
                 Example prompts:
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
@@ -185,7 +181,7 @@ export default function CreatePage() {
                   <button
                     key={examplePrompt}
                     onClick={() => setPrompt(examplePrompt)}
-                    className="p-3 text-sm text-left bg-gray-50 hover:bg-gray-100 rounded-md border border-gray-200"
+                    className="p-3 text-sm text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-md border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-gray-200"
                   >
                     {examplePrompt}
                   </button>
@@ -196,7 +192,7 @@ export default function CreatePage() {
         </main>
 
         {/* Fixed prompt input at bottom */}
-        <div className="border-t border-gray-200 bg-white p-4">
+        <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
           <div className="container mx-auto">
             <div className="flex items-center gap-3">
               <div className="flex-1 relative">
@@ -205,7 +201,7 @@ export default function CreatePage() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="Describe your coloring page..."
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !isGenerating) {
                       handleGenerateImage();
@@ -215,7 +211,7 @@ export default function CreatePage() {
                 {prompt && (
                   <button
                     onClick={() => setPrompt("")}
-                    className="absolute right-12 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <svg
                       className="w-5 h-5"
