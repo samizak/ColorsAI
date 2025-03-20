@@ -2,7 +2,7 @@
 
 import { toast, Toaster } from "sonner";
 import { CheckCircle, AlertCircle, Info } from "lucide-react";
-import { useTheme } from "@/components/providers/theme-provider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 export const ToastContainer = () => {
   // Get the current theme from your ThemeProvider

@@ -1,7 +1,7 @@
 "use client";
 
 import { ToastContainer } from "@/components/ui/Toast";
-import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SupabaseProvider } from "@/components/providers/SupabaseProvider";
 import { SmoothScrollProvider } from "@/components/providers/smooth-scroll-provider";
 

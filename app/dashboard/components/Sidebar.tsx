@@ -19,7 +19,7 @@ import {
   Moon,
   Sun,
 } from "lucide-react";
-import { useTheme } from "@/components/providers/theme-provider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 // Menu items configuration
 const MENU_ITEMS = [
