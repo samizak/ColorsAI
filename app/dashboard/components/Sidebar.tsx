@@ -100,7 +100,7 @@ const Sidebar = ({
               alt="ColorAI"
               width={32}
               height={32}
-              style={{ width: "auto", height: "auto" }}
+              className="w-8 h-8"
             />
             {!isCollapsed && <span>ColorAI</span>}
           </Link>
