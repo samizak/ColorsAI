@@ -90,7 +90,7 @@ const Sidebar = ({
     >
       <div className="flex flex-col h-full">
         {/* Header with logo and collapse button */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
+        <div className="h-[57px] flex items-center justify-between px-4 border-b border-gray-800">
           <Link
             href="/"
             className="text-xl font-bold text-gray-600 dark:text-white flex flex-row gap-2 justify-center items-center"
