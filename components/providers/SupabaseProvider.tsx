@@ -1,9 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import { User, Session } from "@supabase/supabase-js";
+import { User, Session, AuthChangeEvent } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import { createClient } from '@/utils/superbase/client';
+
+// Create a singleton instance of the Supabase client
+const supabaseClient = createClient();
 
 type SupabaseContextType = {
   user: User | null;
@@ -34,7 +37,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
         const {
           data: { session: initialSession },
           error,
-        } = await supabase.auth.getSession();
+        } = await supabaseClient.auth.getSession();
 
         if (error) {
           console.error("Error getting initial session:", error);
@@ -58,7 +61,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabaseClient.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
       if (mounted) {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           if (session?.user) {
@@ -91,7 +94,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
       setSession(null);
 
       // Then sign out from Supabase
-      const { error } = await supabase.auth.signOut();
+      const { error } = await supabaseClient.auth.signOut();
       if (error) {
         console.error("Error during sign out:", error);
         throw error;
