@@ -33,14 +33,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Allow access to the landing page and auth pages without authentication
   if (
     !user &&
+    request.nextUrl.pathname !== "/" && // Allow access to the landing page
     !request.nextUrl.pathname.startsWith("/login") &&
     !request.nextUrl.pathname.startsWith("/auth")
   ) {
-    // no user, potentially respond by redirecting the user to the login page
+    // no user, redirect to the auth page
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    url.pathname = "/auth";  // Changed from "/login" to "/auth"
     return NextResponse.redirect(url);
   }
 
