@@ -12,7 +12,6 @@ import {
   ChevronDown,
   Home,
   Image as LucideImage,
-  Heart,
   User,
   Settings,
   PlusCircle,
@@ -21,6 +20,13 @@ import {
   Sun,
 } from "lucide-react";
 import { useTheme } from "@/components/providers/theme-provider";
+
+// Menu items configuration
+const MENU_ITEMS = [
+  { icon: <Home size={20} />, label: "Dashboard", href: "/dashboard" },
+  { icon: <PlusCircle size={20} />, label: "Create", href: "/create" },
+  { icon: <LucideImage size={20} />, label: "Gallery", href: "/gallery" },
+];
 
 const Sidebar = ({
   isCollapsed,
@@ -47,12 +53,10 @@ const Sidebar = ({
     }
   }, [isCollapsed]);
 
+  // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileMenuRef.current &&
-        !profileMenuRef.current.contains(event.target as Node)
-      ) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setProfileMenuOpen(false);
       }
     };
@@ -66,11 +70,14 @@ const Sidebar = ({
     return fullName.charAt(0).toUpperCase();
   };
 
-  const mainMenuItems = [
-    { icon: <Home size={20} />, label: "Dashboard", href: "/dashboard" },
-    { icon: <PlusCircle size={20} />, label: "Create", href: "/create" },
-    { icon: <LucideImage size={20} />, label: "Gallery", href: "/gallery" },
-  ];
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Error signing out:", error);
+      window.location.href = "/auth";
+    }
+  };
 
   return (
     <div
@@ -79,6 +86,7 @@ const Sidebar = ({
       style={{ width: isCollapsed ? "60px" : "240px" }}
     >
       <div className="flex flex-col h-full">
+        {/* Header with logo and collapse button */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
           <Link
             href="/"
@@ -91,23 +99,20 @@ const Sidebar = ({
             onClick={toggleCollapse}
             className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors cursor-pointer text-gray-600 dark:text-gray-400"
           >
-            {isCollapsed ? (
-              <ChevronRight size={20} />
-            ) : (
-              <ChevronLeft size={20} />
-            )}
+            {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
           </button>
         </div>
 
         <nav className="flex-1 flex flex-col justify-between p-2">
+          {/* Main navigation links */}
           <div className="space-y-1">
-            {mainMenuItems.map((item) => (
+            {MENU_ITEMS.map((item) => (
               <Link
                 key={item.label}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-1",
-                  !isCollapsed ? "justify-start" : "justify-center"
+                  isCollapsed ? "justify-center" : "justify-start"
                 )}
               >
                 {item.icon}
@@ -116,6 +121,7 @@ const Sidebar = ({
             ))}
           </div>
 
+          {/* User profile section */}
           <div
             className="border-t border-gray-200 dark:border-gray-800 pt-2 cursor-pointer"
             ref={profileMenuRef}
@@ -165,14 +171,10 @@ const Sidebar = ({
                       {user?.email || "user@email.com"}
                     </p>
                   </div>
-                  <Link
-                    href="/profile"
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
-                  >
-                    <User size={16} />
-                    Your Profile
-                  </Link>
-
+                  
+                  {/* Menu items */}
+                  <MenuLink href="/profile" icon={<User size={16} />} label="Your Profile" />
+                  
                   {/* Dark Mode Toggle */}
                   <div
                     className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-between cursor-pointer"
@@ -182,39 +184,13 @@ const Sidebar = ({
                       {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
                       {isDarkMode ? "Light Mode" : "Dark Mode"}
                     </div>
-                    <div className="relative inline-block w-10 align-middle select-none">
-                      <input
-                        type="checkbox"
-                        name="darkMode"
-                        id="darkMode"
-                        checked={isDarkMode}
-                        readOnly
-                        className="sr-only peer"
-                      />
-                      <label
-                        htmlFor="darkMode"
-                        onClick={(e) => e.stopPropagation()}
-                        className="block h-6 overflow-hidden bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4"
-                      ></label>
-                    </div>
+                    <ThemeToggle isDarkMode={isDarkMode} />
                   </div>
-
-                  <Link
-                    href="/settings"
-                    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
-                  >
-                    <Settings size={16} />
-                    Settings
-                  </Link>
+                  
+                  <MenuLink href="/settings" icon={<Settings size={16} />} label="Settings" />
+                  
                   <button
-                    onClick={async () => {
-                      try {
-                        await signOut();
-                      } catch (error) {
-                        console.error("Error signing out:", error);
-                        window.location.href = "/auth";
-                      }
-                    }}
+                    onClick={handleSignOut}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 dark:text-red-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
                   >
                     <LogOut size={16} />
@@ -230,5 +206,33 @@ const Sidebar = ({
   );
 };
 
-// Add the default export
+// Helper components
+const MenuLink = ({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) => (
+  <Link
+    href={href}
+    className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+  >
+    {icon}
+    {label}
+  </Link>
+);
+
+const ThemeToggle = ({ isDarkMode }: { isDarkMode: boolean }) => (
+  <div className="relative inline-block w-10 align-middle select-none">
+    <input
+      type="checkbox"
+      name="darkMode"
+      id="darkMode"
+      checked={isDarkMode}
+      readOnly
+      className="sr-only peer"
+    />
+    <label
+      htmlFor="darkMode"
+      onClick={(e) => e.stopPropagation()}
+      className="block h-6 overflow-hidden bg-gray-200 dark:bg-gray-700 rounded-full cursor-pointer peer-checked:bg-purple-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-4"
+    ></label>
+  </div>
+);
+
 export default Sidebar;
