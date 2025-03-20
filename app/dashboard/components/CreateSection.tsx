@@ -17,7 +17,7 @@ const CreateSection = ({
         description="Describe any idea and watch it transform into a perfect coloring page"
         icon={<PlusCircle className="w-6 h-6" />}
         buttonText="Get Started"
-        onClick={() => onCreateNew("/create/text-to-image")}
+        onClick={() => onCreateNew("/create")}
         gradientFrom="from-pink-50"
         gradientTo="to-purple-50"
         buttonColor="purple"
