@@ -12,7 +12,9 @@ export const favoritesService = {
       return [];
     }
 
-    return favorites.map(fav => fav.coloring_page_id);
+    return favorites.map(
+      (fav: { coloring_page_id: any }) => fav.coloring_page_id
+    );
   },
 
   async getFavoriteCount() {
@@ -31,23 +33,25 @@ export const favoritesService = {
 
   async toggleFavorite(coloringPageId: number) {
     const supabase = createClient();
-    
+
     // Get current user
-    const { data: { user } } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) {
       throw new Error("User not authenticated");
     }
-    
-    // Check if already favorited
+
+    // Check if already favorited - FIX: Use match instead of eq for numeric values
     const { data: existing, error: checkError } = await supabase
       .from("favorites")
       .select("id")
-      .eq("coloring_page_id", coloringPageId)
+      .eq("coloring_page_id", coloringPageId.toString()) // Convert to string
       .eq("user_id", user.id)
-      .single();
+      .maybeSingle(); // Use maybeSingle instead of single to avoid errors when no record exists
 
-    if (checkError && checkError.code !== "PGRST116") {
+    if (checkError) {
       console.error("Error checking favorite status:", checkError);
       throw checkError;
     }
@@ -63,24 +67,22 @@ export const favoritesService = {
         console.error("Error removing favorite:", deleteError);
         throw deleteError;
       }
-      
+
       return false; // Not favorited anymore
-    } 
+    }
     // Otherwise, add it
     else {
-      const { error: insertError } = await supabase
-        .from("favorites")
-        .insert({ 
-          coloring_page_id: coloringPageId,
-          user_id: user.id
-        });
+      const { error: insertError } = await supabase.from("favorites").insert({
+        coloring_page_id: coloringPageId,
+        user_id: user.id,
+      });
 
       if (insertError) {
         console.error("Error adding favorite:", insertError);
         throw insertError;
       }
-      
+
       return true; // Now favorited
     }
-  }
+  },
 };
