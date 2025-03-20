@@ -95,7 +95,13 @@ const Sidebar = ({
             href="/"
             className="text-xl font-bold text-gray-600 dark:text-white flex flex-row gap-2 justify-center items-center"
           >
-            <Image src="/logo.png" alt="ColorAI" width={32} height={32} />
+            <Image
+              src="/logo.png"
+              alt="ColorAI"
+              width={32}
+              height={32}
+              style={{ width: "auto", height: "auto" }}
+            />
             {!isCollapsed && <span>ColorAI</span>}
           </Link>
           <button
@@ -147,12 +153,19 @@ const Sidebar = ({
 
               {!isCollapsed && (
                 <div className="flex-1 text-left flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900 dark:text-white text-sm">
-                      {user?.user_metadata?.full_name || "User"}
+                  <div className="flex flex-col">
+                    <p className="font-medium text-gray-900 dark:text-white text-sm truncate max-w-[140px]">
+                      {user?.user_metadata?.full_name || "Welcome"}
                     </p>
                     <p className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[140px]">
-                      {user?.email || "user@email.com"}
+                      {user?.email ? (
+                        <span className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          Active
+                        </span>
+                      ) : (
+                        "Guest"
+                      )}
                     </p>
                   </div>
                   <ChevronDown
@@ -171,12 +184,20 @@ const Sidebar = ({
               <div className="absolute bottom-[55px] left-0 min-w-[240px] p-2 z-50">
                 <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
                   <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-                    <p className="font-medium text-gray-900 dark:text-white">
-                      {user?.user_metadata?.full_name || "User"}
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
-                      {user?.email || "user@email.com"}
-                    </p>
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 flex items-center justify-center font-medium text-lg">
+                        {getUserInitial()}
+                      </div>
+                      <div>
+                        <p className="font-medium text-gray-900 dark:text-white">
+                          {user?.user_metadata?.full_name || "Welcome"}
+                        </p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                          {user?.email || "Guest"}
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Menu items */}
