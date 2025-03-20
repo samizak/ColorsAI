@@ -23,9 +23,7 @@ export async function POST(request: Request) {
 
       const modifiedPrompt = `${prompt}, colouring book art style, only outlines, only black and white`;
       
-      console.log("Sending prompt to Gemini:", modifiedPrompt);
       const response = await model.generateContent(modifiedPrompt);
-      console.log("Received response from Gemini");
 
       const imagePart = response.response?.candidates?.[0]?.content?.parts?.find(
         (part: any) => part.inlineData

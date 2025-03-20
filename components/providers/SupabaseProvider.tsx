@@ -42,7 +42,6 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (mounted) {
-          console.log("Initial session:", initialSession);
           if (initialSession?.user) {
             setSession(initialSession);
             setUser(initialSession.user);
@@ -60,8 +59,6 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state changed:", event, "Session:", session);
-
       if (mounted) {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           if (session?.user) {
@@ -90,8 +87,6 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      console.log("SupabaseProvider: Signing out");
-      // Clear local state first
       setUser(null);
       setSession(null);
 
@@ -102,12 +97,9 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
         throw error;
       }
 
-      console.log("SupabaseProvider: Successfully signed out");
-      // Use router for navigation
       router.push("/auth");
     } catch (err) {
       console.error("Exception during sign out:", err);
-      // Even if there's an error, try to navigate to auth page
       router.push("/auth");
     }
   };
