@@ -192,7 +192,7 @@ export default function Dashboard() {
               <button
                 onClick={() => setActiveTab("recent")}
                 className={cn(
-                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200",
+                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200 cursor-pointer",
                   activeTab === "recent"
                     ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
@@ -204,7 +204,7 @@ export default function Dashboard() {
               <button
                 onClick={() => setActiveTab("favorites")}
                 className={cn(
-                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200",
+                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200 cursor-pointer",
                   activeTab === "favorites"
                     ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
@@ -216,13 +216,13 @@ export default function Dashboard() {
               <button
                 onClick={() => setActiveTab("created")}
                 className={cn(
-                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200",
+                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200 cursor-pointer",
                   activeTab === "created"
                     ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
-                <PenTool className="w-4 h-4" />
+                <PenTool className="w-4 h-4 " />
                 Created by You
               </button>
             </div>

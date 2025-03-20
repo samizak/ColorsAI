@@ -19,7 +19,8 @@ const EmptyState = ({ onCreateNew }: { onCreateNew: () => void }) => (
         "px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full",
         "shadow-lg hover:shadow-purple-500/20 dark:hover:shadow-purple-500/10",
         "transition-all duration-300 transform hover:-translate-y-1",
-        "font-medium flex items-center justify-center gap-2 mx-auto"
+        "font-medium flex items-center justify-center gap-2 mx-auto",
+        "cursor-pointer"
       )}
     >
       <PlusCircle className="w-4 h-4" />

@@ -62,7 +62,7 @@ export default function ColoringCard({
             onClick={handleFavoriteClick}
             disabled={isLoading}
             className={cn(
-              "p-1.5 rounded-full transition-colors",
+              "p-1.5 rounded-full transition-colors cursor-pointer",
               isFavorited
                 ? "text-pink-500 dark:text-pink-400"
                 : "text-gray-400 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-400"
