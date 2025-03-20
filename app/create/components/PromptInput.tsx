@@ -16,7 +16,7 @@ const PromptInput: React.FC<PromptInputProps> = ({
   onGenerate,
 }) => {
   return (
-    <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+    <div className="border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-[9px]">
       <div className="container mx-auto">
         <div className="flex items-center gap-3">
           <div className="flex-1 relative">
