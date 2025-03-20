@@ -35,6 +35,22 @@ export const coloringPagesService = {
     return data || [];
   },
 
+  async getAllColoringPages() {
+    const supabase = createClient();
+
+    const { data, error } = await supabase
+      .from("coloring_pages")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching all coloring pages:", error);
+      throw error;
+    }
+
+    return data || [];
+  },
+
   async getTotalPagesCount() {
     const supabase = createClient();
     
