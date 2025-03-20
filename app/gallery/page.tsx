@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
-import { Search, Filter, Loader2 } from "lucide-react";
+import gsap from "gsap";
+import { useGalleryPages } from "@/app/hooks/useGalleryPages";
+
+// Components
 import Sidebar from "../dashboard/components/Sidebar";
-import { coloringPagesService } from "@/app/services/coloring-pages";
 import ColoringCard from "../dashboard/components/ColoringCard";
-import { favoritesService } from "@/app/services/favorites";
+import ColoringCardSkeleton from "../dashboard/components/ColoringCardSkeleton";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -16,155 +18,154 @@ const poppins = Poppins({
   variable: "--font-poppins",
 });
 
-const categories = [
-  { id: "all", name: "All Pages" },
-  { id: "favorites", name: "Favorites" },
-];
+const ITEMS_PER_PAGE = 12;
 
 export default function GalleryPage() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-  const [isLoading, setIsLoading] = useState(true);
-  const [coloringPages, setColoringPages] = useState<any[]>([]);
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Fetch real data from API
+  const {
+    pages,
+    favoriteIds,
+    currentUserId,
+    isLoading,
+    error,
+    mutatePages,
+    toggleFavorite,
+    handleDeletePage,
+  } = useGalleryPages(page, ITEMS_PER_PAGE);
+
+  // Animation for sidebar collapse
   useEffect(() => {
-    const fetchColoringPages = async () => {
-      setIsLoading(true);
-      try {
-        const pages = await coloringPagesService.getAllColoringPages();
-        setColoringPages(pages);
-      } catch (error) {
-        console.error("Error fetching coloring pages:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (mainContentRef.current) {
+      gsap.to(mainContentRef.current, {
+        marginLeft: sidebarCollapsed ? 60 : 240,
+        duration: 0.5,
+        ease: "power3.inOut",
+      });
+    }
+  }, [sidebarCollapsed]);
 
-    const fetchFavorites = async () => {
-      try {
-        // getFavorites() already returns an array of page IDs
-        const favoriteIds = await favoritesService.getFavorites();
-        setFavorites(favoriteIds);
-      } catch (error) {
-        console.error("Error fetching favorites:", error);
-        setFavorites([]);
-      }
-    };
-
-    fetchColoringPages();
-    fetchFavorites();
-  }, []);
-
-  // Filter pages based on search and category
-  const filteredPages = coloringPages.filter((page) => {
-    const matchesSearch = page.title
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" ||
-      (selectedCategory === "favorites" && favorites.includes(page.id));
-    return matchesSearch && matchesCategory;
-  });
-
-  const handleEditPage = (id: number) => {
-    router.push(`/edit/${id}`);
-  };
-
-  const handleFavoriteChange = (id: number, isFavorited: boolean) => {
-    if (isFavorited) {
-      setFavorites((prev) => [...prev, id]);
-    } else {
-      setFavorites((prev) => prev.filter((pageId) => pageId !== id));
+  const handleFavoriteChange = async (pageId: number, isFavorited: boolean) => {
+    try {
+      await toggleFavorite(pageId);
+    } catch (error) {
+      console.error("Error updating favorite:", error);
     }
   };
 
-  const handleDeletePage = (id: number) => {
-    setColoringPages((prev) => prev.filter((page) => page.id !== id));
+  const handleDeleteConfirm = async (pageId: number) => {
+    try {
+      await handleDeletePage(pageId);
+      // Show success toast or feedback here if needed
+    } catch (error) {
+      console.error("Error deleting page:", error);
+      // Show error toast or feedback here if needed
+    }
   };
 
+  const loadMorePages = () => {
+    setIsLoadingMore(true);
+    setPage(prev => prev + 1);
+  };
+
+  // Reset loading more state when new data arrives
+  useEffect(() => {
+    setIsLoadingMore(false);
+  }, [pages]);
+
+  // Calculate hasMore based on the current page's data length
+  const hasMore = pages?.length === ITEMS_PER_PAGE * page;
+
   return (
-    <div className={cn("flex min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
+    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
-      
-      <main 
-        className="flex-1"
+
+      <div
+        ref={mainContentRef}
+        className="transition-all duration-300 min-h-screen bg-gray-50 dark:bg-gray-900"
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-4 md:mb-0">
-              Coloring Gallery
-            </h1>
-
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <div className="relative flex-1 sm:w-64">
-                <input
-                  type="text"
-                  placeholder="Search coloring pages..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              </div>
-
-              <div className="relative">
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="appearance-none w-full px-4 py-2 pl-10 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-                <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              </div>
+        <main className="container mx-auto px-4 py-8">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white">
+                Gallery
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
+                Explore and discover coloring pages created by the community
+              </p>
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="flex items-center justify-center h-64">
-              <Loader2 className="h-12 w-12 text-purple-600 dark:text-purple-400 animate-spin" />
-            </div>
-          ) : filteredPages.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {filteredPages.map((page) => (
-                <ColoringCard
-                  key={page.id}
-                  page={page}
-                  onEdit={handleEditPage}
-                  initialFavorited={favorites.includes(page.id)}
-                  onFavoriteChange={handleFavoriteChange}
-                  onDelete={handleDeletePage}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 text-center">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                <Search className="h-8 w-8 text-gray-400" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+            {isLoading && page === 1 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+                  <ColoringCardSkeleton key={index} />
+                ))}
               </div>
-              <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
-                No coloring pages found
-              </h3>
-              <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                We couldn't find any coloring pages matching your search
-                criteria. Try adjusting your filters or search term.
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
+            ) : error ? (
+              <div className="text-center py-8">
+                <p className="text-red-500">Error loading gallery pages</p>
+              </div>
+            ) : pages && pages.length > 0 ? (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                  {pages.map((page) => (
+                    <ColoringCard
+                      key={page.id}
+                      page={page}
+                      onEdit={(id) => router.push(`/edit?id=${id}`)}
+                      initialFavorited={favoriteIds.includes(page.id)}
+                      onFavoriteChange={handleFavoriteChange}
+                      onDelete={page.user_id === currentUserId ? handleDeleteConfirm : undefined}
+                      hideDelete={page.user_id !== currentUserId}
+                    />
+                  ))}
+                </div>
+                {hasMore && (
+                  <div className="flex justify-center mt-8">
+                    <button
+                      onClick={loadMorePages}
+                      disabled={isLoadingMore}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Loading...
+                        </>
+                      ) : (
+                        'Load More'
+                      )}
+                    </button>
+                  </div>
+                )}
+                {isLoadingMore && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+                    {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+                      <ColoringCardSkeleton key={`loading-more-${index}`} />
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600 dark:text-gray-300">
+                  No coloring pages available yet
+                </p>
+              </div>
+            )}
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

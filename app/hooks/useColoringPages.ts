@@ -2,19 +2,24 @@ import useSWR from 'swr';
 import { coloringPagesService } from '@/app/services/coloring-pages';
 import { favoritesService } from '@/app/services/favorites';
 import { TabType } from '@/app/dashboard/components/types';
+import { useState, useEffect } from 'react';
+import { ColoringPage } from '@/app/services/coloring-pages';
 
 const CACHE_KEY_PAGES = 'coloring-pages';
 const CACHE_KEY_FAVORITES = 'favorite-ids';
 const CACHE_KEY_USER_PAGES = 'user-generated-pages';
 
 export function useColoringPages(page = 1, itemsPerPage = 12, activeTab: TabType = "created") {
+  const [accumulatedPages, setAccumulatedPages] = useState<ColoringPage[]>([]);
+  const [accumulatedUserPages, setAccumulatedUserPages] = useState<ColoringPage[]>([]);
+
   // Fetch all pages
-  const { data: pages, error: pagesError, mutate: mutatePages } = useSWR(
+  const { data: newPages, error: pagesError, mutate: mutatePages } = useSWR(
     [CACHE_KEY_PAGES, page],
     () => coloringPagesService.getRecentPages(page, itemsPerPage),
     {
-      revalidateOnFocus: false, // Don't revalidate on window focus
-      dedupingInterval: 60000, // Cache for 1 minute
+      revalidateOnFocus: false,
+      dedupingInterval: 60000,
     }
   );
 
@@ -29,7 +34,7 @@ export function useColoringPages(page = 1, itemsPerPage = 12, activeTab: TabType
   );
 
   // Fetch user generated pages
-  const { data: userPages, error: userPagesError, mutate: mutateUserPages } = useSWR(
+  const { data: newUserPages, error: userPagesError, mutate: mutateUserPages } = useSWR(
     [CACHE_KEY_USER_PAGES, page],
     () => coloringPagesService.getUserGeneratedPages(page, itemsPerPage),
     {
@@ -38,10 +43,32 @@ export function useColoringPages(page = 1, itemsPerPage = 12, activeTab: TabType
     }
   );
 
+  // Accumulate pages when new data arrives
+  useEffect(() => {
+    if (newPages) {
+      setAccumulatedPages(prev => {
+        const newPageIds = new Set(newPages.map(page => page.id));
+        const filteredPrev = prev.filter(page => !newPageIds.has(page.id));
+        return [...filteredPrev, ...newPages];
+      });
+    }
+  }, [newPages]);
+
+  // Accumulate user pages when new data arrives
+  useEffect(() => {
+    if (newUserPages) {
+      setAccumulatedUserPages(prev => {
+        const newPageIds = new Set(newUserPages.map(page => page.id));
+        const filteredPrev = prev.filter(page => !newPageIds.has(page.id));
+        return [...filteredPrev, ...newUserPages];
+      });
+    }
+  }, [newUserPages]);
+
   const isLoading = 
-    (!pages && !pagesError) || 
+    (!newPages && !pagesError) || 
     (!favoriteIds && !favoritesError) || 
-    (activeTab === "created" && !userPages && !userPagesError);
+    (activeTab === "created" && !newUserPages && !userPagesError);
 
   const error = pagesError || favoritesError || (activeTab === "created" ? userPagesError : null);
 
@@ -56,7 +83,7 @@ export function useColoringPages(page = 1, itemsPerPage = 12, activeTab: TabType
         } else {
           return prev.filter(id => id !== pageId);
         }
-      }, false); // false means no revalidation needed
+      }, false);
       
       return newFavoritedState;
     } catch (error) {
@@ -65,15 +92,37 @@ export function useColoringPages(page = 1, itemsPerPage = 12, activeTab: TabType
     }
   };
 
+  // We no longer clear accumulated pages when tab changes
+  // This ensures we maintain the data across tab switches
+  // useEffect(() => {
+  //   setAccumulatedPages([]);
+  //   setAccumulatedUserPages([]);
+  // }, [activeTab]);
+
+  const allPages = activeTab === "created" ? accumulatedUserPages : accumulatedPages;
+  const displayedPages = activeTab === "favorites" 
+    ? allPages.filter(page => favoriteIds?.includes(page.id))
+    : allPages;
+
   return {
-    pages: pages || [],
+    pages: allPages,
     favoriteIds: favoriteIds || [],
-    userPages: userPages || [],
+    userPages: displayedPages,
     isLoading,
     error,
-    mutatePages,
+    mutatePages: async (data?: any) => {
+      if (typeof data === 'function') {
+        setAccumulatedPages(data(accumulatedPages));
+      }
+      return mutatePages(data);
+    },
     mutateFavorites,
-    mutateUserPages,
+    mutateUserPages: async (data?: any) => {
+      if (typeof data === 'function') {
+        setAccumulatedUserPages(data(accumulatedUserPages));
+      }
+      return mutateUserPages(data);
+    },
     toggleFavorite,
   };
 } 

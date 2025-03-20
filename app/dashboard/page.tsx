@@ -30,6 +30,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [page, setPage] = useState(1);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -81,16 +82,38 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeleteConfirm = async (pageId: number) => {
+    try {
+      await handleDeletePage(pageId);
+      // Show success toast or feedback here if needed
+    } catch (error) {
+      console.error("Error deleting page:", error);
+      // Show error toast or feedback here if needed
+    }
+  };
+
   const loadMorePages = () => {
+    setIsLoadingMore(true);
     setPage(prev => prev + 1);
   };
 
-  // Get pages based on active tab
-  const displayedPages = activeTab === "favorites" 
-    ? (pages || []).filter(page => favoriteIds.includes(page.id))
-    : userPages || [];
+  // Reset page count when tab changes but maintain the data
+  useEffect(() => {
+    if (page !== 1) {
+      setPage(1);
+    }
+  }, [activeTab, page]);
 
-  const hasMore = displayedPages.length === ITEMS_PER_PAGE * page;
+  // Reset loading more state when new data arrives
+  useEffect(() => {
+    setIsLoadingMore(false);
+  }, [pages, userPages]);
+
+  // Get pages based on active tab - removed as it's now handled in the hook
+  const displayedPages = userPages;
+
+  // Calculate hasMore based on the current page's data length
+  const hasMore = displayedPages?.length === ITEMS_PER_PAGE * page;
 
   return (
     <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
@@ -194,7 +217,7 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {isLoading ? (
+            {isLoading && page === 1 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
                   <ColoringCardSkeleton key={index} />
@@ -214,7 +237,7 @@ export default function Dashboard() {
                       onEdit={(id) => router.push(`/edit?id=${id}`)}
                       initialFavorited={favoriteIds.includes(page.id)}
                       onFavoriteChange={handleFavoriteChange}
-                      onDelete={handleDeletePage}
+                      onDelete={handleDeleteConfirm}
                     />
                   ))}
                 </div>
@@ -222,10 +245,25 @@ export default function Dashboard() {
                   <div className="flex justify-center mt-8">
                     <button
                       onClick={loadMorePages}
+                      disabled={isLoadingMore}
                       className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                     >
-                      Load More
+                      {isLoadingMore ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          Loading...
+                        </>
+                      ) : (
+                        'Load More'
+                      )}
                     </button>
+                  </div>
+                )}
+                {isLoadingMore && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-6">
+                    {Array.from({ length: ITEMS_PER_PAGE }).map((_, index) => (
+                      <ColoringCardSkeleton key={`loading-more-${index}`} />
+                    ))}
                   </div>
                 )}
               </>

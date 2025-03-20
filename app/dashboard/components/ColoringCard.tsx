@@ -5,6 +5,7 @@ import { favoritesService } from "@/app/services/favorites";
 import { coloringPagesService } from "@/app/services/coloring-pages";
 import ConfirmationModal from "@/app/components/ConfirmationModal";
 import Image from "next/image";
+import DeleteConfirmationModal from "@/app/components/DeleteConfirmationModal";
 
 interface ColoringCardProps {
   page: {
@@ -13,100 +14,75 @@ interface ColoringCardProps {
     image: string;
   };
   onEdit: (id: number) => void;
+  onDelete?: (id: number) => void;
   initialFavorited: boolean;
-  onFavoriteChange: (id: number, isFavorited: boolean) => void;
-  onDelete: (id: number) => void;
+  onFavoriteChange: (pageId: number, isFavorited: boolean) => void;
+  hideDelete?: boolean;
 }
 
 export default function ColoringCard({
   page,
   onEdit,
+  onDelete,
   initialFavorited,
   onFavoriteChange,
-  onDelete,
+  hideDelete = false,
 }: ColoringCardProps) {
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const pendingRequest = useRef<boolean>(false);
-  const lastClickTime = useRef<number>(0);
   const isMounted = useRef(true);
-  const CLICK_DELAY = 500; // Minimum time between clicks (500ms)
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       isMounted.current = false;
     };
   }, []);
 
+  useEffect(() => {
+    setIsFavorited(initialFavorited);
+  }, [initialFavorited]);
+
   const handleFavoriteClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent event bubbling
-    
-    const now = Date.now();
-    if (pendingRequest.current || now - lastClickTime.current < CLICK_DELAY) {
-      return; // Prevent rapid clicking and concurrent requests
-    }
+    e.stopPropagation();
+    if (isUpdating) return;
 
-    lastClickTime.current = now;
-    pendingRequest.current = true;
-
-    // Optimistically update the UI
-    const newFavoritedState = !isFavorited;
-    setIsFavorited(newFavoritedState);
-    onFavoriteChange(page.id, newFavoritedState);
+    setIsUpdating(true);
+    const newState = !isFavorited;
+    setIsFavorited(newState);
 
     try {
-      // Make the API call in the background
-      await favoritesService.toggleFavorite(page.id);
-      
-      // Only update state if component is still mounted
-      if (isMounted.current) {
-        setIsFavorited(newFavoritedState);
-        onFavoriteChange(page.id, newFavoritedState);
-      }
+      await onFavoriteChange(page.id, newState);
     } catch (error) {
-      // Only revert state if component is still mounted
       if (isMounted.current) {
-        console.error("Error toggling favorite:", error);
-        setIsFavorited(!newFavoritedState);
-        onFavoriteChange(page.id, !newFavoritedState);
+        setIsFavorited(!newState);
       }
+      console.error("Error updating favorite:", error);
     } finally {
       if (isMounted.current) {
-        pendingRequest.current = false;
+        setIsUpdating(false);
       }
     }
   };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent triggering other click events
+    e.stopPropagation();
     setShowDeleteModal(true);
   };
 
-  const confirmDelete = async () => {
-    setIsDeleting(true);
+  const handleConfirmDelete = async () => {
     try {
-      await coloringPagesService.deleteColoringPage(page.id);
-      if (isMounted.current) {
-        onDelete(page.id);
+      if (onDelete) {
+        await onDelete(page.id);
       }
     } catch (error) {
-      if (isMounted.current) {
-        console.error("Error deleting coloring page:", error);
-      }
-    } finally {
-      if (isMounted.current) {
-        setIsDeleting(false);
-        setShowDeleteModal(false);
-      }
+      console.error("Error deleting page:", error);
     }
   };
 
   return (
     <>
-      <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md group">
+      <div className="group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div className="relative aspect-square rounded-t-lg overflow-hidden">
           <Image
             src={page.image}
@@ -122,49 +98,46 @@ export default function ColoringCard({
               >
                 <Edit className="h-4 w-4 text-gray-700 dark:text-gray-300" />
               </button>
-              <button
-                onClick={handleDeleteClick}
-                disabled={isDeleting}
-                className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-md hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors cursor-pointer"
-              >
-                <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
-              </button>
+              {!hideDelete && onDelete && (
+                <button
+                  onClick={handleDeleteClick}
+                  className="p-2 bg-white dark:bg-gray-800 rounded-full shadow-md hover:bg-red-100 dark:hover:bg-red-900/90 transition-colors cursor-pointer"
+                >
+                  <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
+                </button>
+              )}
             </div>
           </div>
         </div>
         <div className="p-4">
-          <div className="flex justify-between items-start">
-            <h4 className="font-medium text-gray-900 dark:text-white line-clamp-1">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">
               {page.title}
-            </h4>
-            <button
-              onClick={handleFavoriteClick}
-              className={cn(
-                "p-1.5 rounded-full transition-all duration-200 cursor-pointer transform hover:scale-110 active:scale-95",
-                isFavorited
-                  ? "text-pink-500 dark:text-pink-400"
-                  : "text-gray-400 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-400"
-              )}
-            >
-              <Heart
+            </h3>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleFavoriteClick}
+                disabled={isUpdating}
                 className={cn(
-                  "h-4 w-4 transition-all duration-200",
-                  isFavorited ? "fill-current" : "fill-none"
+                  "p-2 rounded-full transition-colors duration-200 cursor-pointer",
+                  isFavorited
+                    ? "text-pink-600 dark:text-pink-400"
+                    : "text-gray-400 hover:text-pink-600 dark:hover:text-pink-400"
                 )}
-              />
-            </button>
+              >
+                <Heart
+                  className={cn("h-5 w-5", isFavorited ? "fill-current" : "")}
+                />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <ConfirmationModal
+      <DeleteConfirmationModal
         isOpen={showDeleteModal}
-        title="Delete Coloring Page"
-        message={`Are you sure you want to delete "${page.title}"? This action cannot be undone.`}
-        confirmText="Delete"
-        cancelText="Cancel"
-        onConfirm={confirmDelete}
-        onCancel={() => setShowDeleteModal(false)}
+        onClose={() => setShowDeleteModal(false)}
+        onConfirm={handleConfirmDelete}
       />
     </>
   );
