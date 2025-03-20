@@ -123,7 +123,9 @@ export function GallerySection({ coloringImages1 }: GalleryProps) {
                       src={image}
                       alt={`Inspiration ${index + 1}`}
                       fill
+                      priority={index < 3} // Add priority to first 3 images that are likely above the fold
                       className="object-cover"
+                      sizes="(max-width: 768px) 100vw, 350px"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
                       <div className="p-4 text-white">

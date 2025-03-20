@@ -154,6 +154,7 @@ export function FeaturesSection({
                     fill
                     priority
                     className="object-cover transition-opacity duration-1000 group-hover:opacity-0"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
 
                   {/* Colored version that appears on hover */}
@@ -165,6 +166,7 @@ export function FeaturesSection({
                     fill
                     priority
                     className="object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-1000"
+                    sizes="(max-width: 768px) 100vw, 50vw"
                   />
 
                   <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
@@ -226,7 +228,10 @@ export function FeaturesSection({
             Join thousands of parents and teachers who are using our platform to
             create custom coloring pages that kids absolutely love!
           </p>
-          <Link href="/dashboard" className="px-8 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer inline-block">
+          <Link
+            href="/dashboard"
+            className="px-8 py-4 rounded-full bg-gradient-to-r from-red-500 to-red-600 text-white font-bold text-lg shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer inline-block"
+          >
             Start Creating
           </Link>
         </div>
