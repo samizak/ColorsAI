@@ -10,7 +10,7 @@ const GenerationPlaceholder: React.FC<GenerationPlaceholderProps> = ({ isGenerat
     <div className="flex items-center justify-center flex-1 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 mb-4 min-h-0">
       {isGenerating ? (
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-200 dark:border-purple-300/30 border-t-purple-600 mb-4"></div>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-purple-200 dark:border-purple-400/30 border-t-purple-600 dark:border-t-purple-400 mb-4"></div>
           <p className="text-gray-600 dark:text-gray-300">
             Generating your coloring page...
           </p>
