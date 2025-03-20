@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
 import gsap from "gsap";
-import { Clock, Heart, PlusCircle, Printer, PenTool } from "lucide-react";
+import { Heart, PlusCircle, Printer, PenTool } from "lucide-react";
 import { favoritesService } from "@/app/services/favorites";
 import { coloringPagesService } from "@/app/services/coloring-pages";
 
@@ -15,8 +15,6 @@ import ColoringCard from "./components/ColoringCard";
 import EmptyState from "./components/EmptyState";
 import CreateSection from "./components/CreateSection";
 
-// Data and Types
-import { COLORING_PAGES } from "./components/data";
 import { TabType } from "./components/types";
 
 const poppins = Poppins({
@@ -26,40 +24,37 @@ const poppins = Poppins({
 });
 
 export default function Dashboard() {
-  const [activeTab, setActiveTab] = useState<TabType>("recent");
+  const [activeTab, setActiveTab] = useState<TabType>("created");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [favoriteIds, setFavoriteIds] = useState<number[]>([]);
   const [favoriteCount, setFavoriteCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [coloringPages, setColoringPages] = useState<any[]>([]);
   const [userGeneratedPages, setUserGeneratedPages] = useState<any[]>([]);
-  const [totalPagesCount, setTotalPagesCount] = useState(0); // Add this state for total pages count
+  const [totalPagesCount, setTotalPagesCount] = useState(0);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Load data based on active tab
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
-        // Load favorites regardless of tab
         const [favorites, count, totalCount] = await Promise.all([
           favoritesService.getFavorites(),
           favoritesService.getFavoriteCount(),
-          coloringPagesService.getTotalPagesCount(), // Add this new call
+          coloringPagesService.getTotalPagesCount(),
         ]);
         setFavoriteIds(favorites);
         setFavoriteCount(count);
-        setTotalPagesCount(totalCount); // Set the total count
+        setTotalPagesCount(totalCount);
 
-        // Load tab-specific data
-        if (activeTab === "recent") {
-          const recentPages = await coloringPagesService.getRecentPages();
-          setColoringPages(recentPages);
-        } else if (activeTab === "created") {
+        if (activeTab === "created") {
           const generatedPages =
             await coloringPagesService.getUserGeneratedPages();
           setUserGeneratedPages(generatedPages);
+        } else if (activeTab === "favorites") {
+          const recentPages = await coloringPagesService.getRecentPages();
+          setColoringPages(recentPages);
         }
       } catch (error) {
         console.error("Error loading data:", error);
@@ -71,7 +66,6 @@ export default function Dashboard() {
     loadData();
   }, [activeTab]);
 
-  // Animation for main content margin adjustment
   useEffect(() => {
     if (mainContentRef.current) {
       gsap.to(mainContentRef.current, {
@@ -101,23 +95,16 @@ export default function Dashboard() {
     } else if (activeTab === "created") {
       return userGeneratedPages;
     } else {
-      return coloringPages;
+      return [];
     }
   };
 
   const displayedPages = getDisplayedPages();
 
-  // Add this function to the Dashboard component
-
-  // Add this function to handle deletion
   const handleDeletePage = (pageId: number) => {
-    // Remove from coloringPages
     setColoringPages((prev) => prev.filter((page) => page.id !== pageId));
-
-    // Remove from userGeneratedPages if it exists there
     setUserGeneratedPages((prev) => prev.filter((page) => page.id !== pageId));
 
-    // If it was a favorite, update the favorites count
     if (favoriteIds.includes(pageId)) {
       setFavoriteIds((prev) => prev.filter((id) => id !== pageId));
       setFavoriteCount((prev) => prev - 1);
@@ -207,19 +194,19 @@ export default function Dashboard() {
               Your Coloring Pages
             </h3>
 
-            {/* Tabs */}
+            {/* Tabs - Reordered and removed Recent tab */}
             <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
               <button
-                onClick={() => setActiveTab("recent")}
+                onClick={() => setActiveTab("created")}
                 className={cn(
                   "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200 cursor-pointer",
-                  activeTab === "recent"
+                  activeTab === "created"
                     ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
                     : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
                 )}
               >
-                <Clock className="w-4 h-4" />
-                Recent
+                <PenTool className="w-4 h-4 " />
+                Created by You
               </button>
               <button
                 onClick={() => setActiveTab("favorites")}
@@ -232,18 +219,6 @@ export default function Dashboard() {
               >
                 <Heart className="w-4 h-4" />
                 Favorites
-              </button>
-              <button
-                onClick={() => setActiveTab("created")}
-                className={cn(
-                  "px-4 py-2 font-medium text-sm mr-4 flex items-center gap-2 transition-all duration-200 cursor-pointer",
-                  activeTab === "created"
-                    ? "text-purple-600 dark:text-purple-400 border-b-2 border-purple-600 dark:border-purple-400"
-                    : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600"
-                )}
-              >
-                <PenTool className="w-4 h-4 " />
-                Created by You
               </button>
             </div>
 
