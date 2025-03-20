@@ -118,7 +118,7 @@ const Sidebar = ({
                 key={item.label}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-1",
+                  "flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-purple-200 dark:hover:bg-purple-900/20 hover:text-purple-600 dark:hover:text-purple-400 transition-colors mb-1",
                   isCollapsed ? "justify-center" : "justify-start"
                 )}
               >
@@ -136,7 +136,7 @@ const Sidebar = ({
             <button
               onClick={() => setProfileMenuOpen(!profileMenuOpen)}
               className={cn(
-                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded-lg transition-colors relative cursor-pointer",
+                "w-full px-3 py-2 flex items-center gap-3 hover:bg-purple-200 dark:hover:bg-purple-900/20 rounded-lg transition-colors relative cursor-pointer",
                 profileMenuOpen && "bg-purple-50 dark:bg-purple-900/20",
                 isCollapsed && "justify-center"
               )}
