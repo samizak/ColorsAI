@@ -104,18 +104,20 @@ export default function Dashboard() {
 
   const displayedPages = getDisplayedPages();
 
+  // Add this function to the Dashboard component
+
   // Add this function to handle deletion
   const handleDeletePage = (pageId: number) => {
     // Remove from coloringPages
-    setColoringPages(prev => prev.filter(page => page.id !== pageId));
-    
+    setColoringPages((prev) => prev.filter((page) => page.id !== pageId));
+
     // Remove from userGeneratedPages if it exists there
-    setUserGeneratedPages(prev => prev.filter(page => page.id !== pageId));
-    
+    setUserGeneratedPages((prev) => prev.filter((page) => page.id !== pageId));
+
     // If it was a favorite, update the favorites count
     if (favoriteIds.includes(pageId)) {
-      setFavoriteIds(prev => prev.filter(id => id !== pageId));
-      setFavoriteCount(prev => prev - 1);
+      setFavoriteIds((prev) => prev.filter((id) => id !== pageId));
+      setFavoriteCount((prev) => prev - 1);
     }
   };
 
