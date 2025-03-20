@@ -27,6 +27,7 @@
     "react-dom": "^19.0.0",
     "shadcn": "^2.4.0-canary.14",
     "sonner": "^2.0.1",
+    "swr": "^2.3.3",
     "tailwind-merge": "^3.0.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0"

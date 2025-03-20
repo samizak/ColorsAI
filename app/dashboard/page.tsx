@@ -273,7 +273,7 @@ export default function Dashboard() {
                     <ColoringCard
                       key={page.id}
                       page={page}
-                      onEdit={(id) => router.push(`/edit/${id}`)}
+                      onEdit={(id) => router.push(`/edit?id=${id}`)}
                       initialFavorited={favoriteIds.includes(page.id)}
                       onFavoriteChange={handleFavoriteChange}
                       onDelete={handleDeletePage}
