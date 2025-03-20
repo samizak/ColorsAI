@@ -1,95 +1,79 @@
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
-import { Heart, Printer, Edit } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { favoritesService } from '@/app/services/favorites';
-
-interface ColoringPage {
-  id: number;
-  title: string;
-  image: string;
-  created: string;
-}
+import { useState } from "react";
+import { Heart, Edit } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { favoritesService } from "@/app/services/favorites";
 
 interface ColoringCardProps {
-  page: ColoringPage;
+  page: {
+    id: number;
+    title: string;
+    image: string;
+  };
   onEdit: (id: number) => void;
-  initialFavorited?: boolean;
-  onFavoriteChange?: (id: number, isFavorited: boolean) => void;
-  isFirstCard?: boolean;
+  initialFavorited: boolean;
+  onFavoriteChange: (id: number, isFavorited: boolean) => void;
 }
 
 export default function ColoringCard({
   page,
   onEdit,
-  initialFavorited = false,
+  initialFavorited,
   onFavoriteChange,
-  isFirstCard = false,
 }: ColoringCardProps) {
   const [isFavorited, setIsFavorited] = useState(initialFavorited);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleFavoriteClick = async () => {
-    if (isLoading) return;
-    
     setIsLoading(true);
     try {
-      const newFavoriteState = await favoritesService.toggleFavorite(page.id);
-      setIsFavorited(newFavoriteState);
-      onFavoriteChange?.(page.id, newFavoriteState);
+      const newFavoritedState = await favoritesService.toggleFavorite(page.id);
+      setIsFavorited(newFavoritedState);
+      onFavoriteChange(page.id, newFavoritedState);
     } catch (error) {
-      console.error('Error toggling favorite:', error);
+      console.error("Error toggling favorite:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="group relative bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-md">
-      <div className="aspect-square relative overflow-hidden">
-        <Image
+    <div className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md">
+      <div className="relative aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700">
+        <img
           src={page.image}
           alt={page.title}
-          fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 25vw"
-          priority={isFirstCard}
+          className="w-full h-full object-cover"
         />
-        <button
-          onClick={handleFavoriteClick}
-          disabled={isLoading}
-          className={cn(
-            "absolute top-2 right-2 p-2 rounded-full",
-            "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm",
-            "hover:bg-white dark:hover:bg-gray-700 transition-colors duration-200",
-            "focus:outline-none focus:ring-2 focus:ring-primary-500",
-            isLoading && "opacity-50 cursor-not-allowed"
-          )}
-        >
-          <Heart
-            className={cn(
-              "w-5 h-5 transition-colors duration-200",
-              isFavorited
-                ? "fill-red-500 stroke-red-500"
-                : "fill-none stroke-gray-600 dark:stroke-gray-400"
-            )}
-          />
-        </button>
-      </div>
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-900 dark:text-white mb-1">{page.title}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Created: {page.created}</p>
-        <div className="flex mt-4 gap-2">
-          <button className="flex-1 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-md text-sm font-medium hover:bg-purple-200 transition-colors cursor-pointer flex items-center justify-center gap-1">
-            <Printer size={16} />
-            Print
-          </button>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={() => onEdit(page.id)}
-            className="flex-1 px-3 py-1.5 bg-pink-100 text-pink-700 rounded-md text-sm font-medium hover:bg-pink-200 transition-colors cursor-pointer flex items-center justify-center gap-1"
+            className="absolute bottom-3 left-3 p-2 bg-white dark:bg-gray-800 rounded-full shadow-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
-            <Edit size={16} />
-            Edit
+            <Edit className="h-4 w-4 text-gray-700 dark:text-gray-300" />
+          </button>
+        </div>
+      </div>
+      <div className="p-4">
+        <div className="flex justify-between items-start">
+          <h4 className="font-medium text-gray-900 dark:text-white line-clamp-1">
+            {page.title}
+          </h4>
+          <button
+            onClick={handleFavoriteClick}
+            disabled={isLoading}
+            className={cn(
+              "p-1.5 rounded-full transition-colors",
+              isFavorited
+                ? "text-pink-500 dark:text-pink-400"
+                : "text-gray-400 dark:text-gray-500 hover:text-pink-500 dark:hover:text-pink-400"
+            )}
+          >
+            <Heart
+              className={cn(
+                "h-4 w-4",
+                isFavorited ? "fill-current" : "fill-none"
+              )}
+            />
           </button>
         </div>
       </div>
