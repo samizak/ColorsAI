@@ -4,10 +4,11 @@ import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Poppins } from "next/font/google";
 import { useRouter } from "next/navigation";
-import { Search, Filter, Sparkles, Loader2 } from "lucide-react";
-import Image from "next/image";
+import { Search, Filter, Loader2 } from "lucide-react";
 import Sidebar from "../dashboard/components/Sidebar";
 import { coloringPagesService } from "@/app/services/coloring-pages";
+import ColoringCard from "../dashboard/components/ColoringCard";
+import { favoritesService } from "@/app/services/favorites";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -17,9 +18,7 @@ const poppins = Poppins({
 
 const categories = [
   { id: "all", name: "All Pages" },
-  { id: "nature", name: "Nature" },
-  { id: "animals", name: "Animals" },
-  { id: "fantasy", name: "Fantasy" },
+  { id: "favorites", name: "Favorites" },
 ];
 
 export default function GalleryPage() {
@@ -28,6 +27,7 @@ export default function GalleryPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [isLoading, setIsLoading] = useState(true);
   const [coloringPages, setColoringPages] = useState<any[]>([]);
+  const [favorites, setFavorites] = useState<number[]>([]);
   const router = useRouter();
 
   // Fetch real data from API
@@ -44,7 +44,19 @@ export default function GalleryPage() {
       }
     };
 
+    const fetchFavorites = async () => {
+      try {
+        // getFavorites() already returns an array of page IDs
+        const favoriteIds = await favoritesService.getFavorites();
+        setFavorites(favoriteIds);
+      } catch (error) {
+        console.error("Error fetching favorites:", error);
+        setFavorites([]);
+      }
+    };
+
     fetchColoringPages();
+    fetchFavorites();
   }, []);
 
   // Filter pages based on search and category
@@ -54,13 +66,24 @@ export default function GalleryPage() {
       .includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === "all" ||
-      (page.category && page.category.toLowerCase() === selectedCategory);
+      (selectedCategory === "favorites" && favorites.includes(page.id));
     return matchesSearch && matchesCategory;
   });
 
-  const handlePageClick = (id: number) => {
-    // Navigate to the edit page or show a preview
+  const handleEditPage = (id: number) => {
     router.push(`/edit/${id}`);
+  };
+
+  const handleFavoriteChange = (id: number, isFavorited: boolean) => {
+    if (isFavorited) {
+      setFavorites((prev) => [...prev, id]);
+    } else {
+      setFavorites((prev) => prev.filter((pageId) => pageId !== id));
+    }
+  };
+
+  const handleDeletePage = (id: number) => {
+    setColoringPages((prev) => prev.filter((page) => page.id !== id));
   };
 
   return (
@@ -121,38 +144,14 @@ export default function GalleryPage() {
           ) : filteredPages.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {filteredPages.map((page) => (
-                <div
+                <ColoringCard
                   key={page.id}
-                  onClick={() => handlePageClick(page.id)}
-                  className="bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md cursor-pointer group"
-                >
-                  <div className="relative aspect-square">
-                    <Image
-                      src={page.image}
-                      alt={page.title}
-                      fill
-                      className="object-cover transition-all duration-300 group-hover:scale-105"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end">
-                      <div className="p-4 w-full">
-                        <div className="flex items-center justify-between">
-                          <span className="text-white text-sm font-medium">
-                            {page.likes ? `${page.likes} likes` : ""}
-                          </span>
-                          <Sparkles className="h-4 w-4 text-yellow-400" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-medium text-gray-900 dark:text-white">
-                      {page.title}
-                    </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {page.category ? page.category.charAt(0).toUpperCase() + page.category.slice(1) : "Uncategorized"}
-                    </p>
-                  </div>
-                </div>
+                  page={page}
+                  onEdit={handleEditPage}
+                  initialFavorited={favorites.includes(page.id)}
+                  onFavoriteChange={handleFavoriteChange}
+                  onDelete={handleDeletePage}
+                />
               ))}
             </div>
           ) : (
