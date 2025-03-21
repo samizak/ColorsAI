@@ -13,6 +13,7 @@ import Header from "./components/Header";
 import ImageEditor from "./components/ImageEditor";
 import DeleteConfirmationModal from "@/app/components/DeleteConfirmationModal";
 import { coloringPagesService } from "@/app/services/coloring-pages";
+import ImageControls from "./components/ImageControls";
 
 const poppins = Poppins({
   subsets: ["latin"],
@@ -32,12 +33,12 @@ function EditPageContent() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+  const [isPanning, setIsPanning] = useState(false);
   const mainContentRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
-  // Auto-collapse sidebar on mobile
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
@@ -45,11 +46,11 @@ function EditPageContent() {
       }
     };
 
-    handleResize(); // Initial check
-    window.addEventListener('resize', handleResize);
+    handleResize();
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
     };
   }, []);
 
@@ -85,7 +86,9 @@ function EditPageContent() {
         setTitle(data.title);
       } catch (error) {
         console.error("Error fetching image:", error);
-        setError(error instanceof Error ? error.message : "Failed to fetch image");
+        setError(
+          error instanceof Error ? error.message : "Failed to fetch image"
+        );
       } finally {
         setIsLoading(false);
       }
@@ -118,7 +121,9 @@ function EditPageContent() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Error saving changes:", error);
-      setError(error instanceof Error ? error.message : "Failed to save changes");
+      setError(
+        error instanceof Error ? error.message : "Failed to save changes"
+      );
     } finally {
       setIsSaving(false);
     }
@@ -126,14 +131,18 @@ function EditPageContent() {
 
   const handleDelete = async () => {
     if (!id) return;
-    
+
     setIsDeleting(true);
     try {
       await coloringPagesService.deleteColoringPage(parseInt(id));
       router.push("/dashboard");
     } catch (error) {
       console.error("Error deleting coloring page:", error);
-      setError(error instanceof Error ? error.message : "Failed to delete coloring page");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to delete coloring page"
+      );
     } finally {
       setIsDeleting(false);
       setShowDeleteModal(false);
@@ -142,20 +151,39 @@ function EditPageContent() {
 
   const handleDownload = () => {
     if (!imageData) return;
-    
-    const link = document.createElement('a');
+
+    const link = document.createElement("a");
     link.href = imageData;
-    link.download = `${title || 'coloring-page'}.png`;
+    link.download = `${title || "coloring-page"}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
+  const togglePanMode = () => {
+    setIsPanning(!isPanning);
+  };
+
   return (
-    <div className={cn("min-h-screen bg-gray-50 dark:bg-gray-900", poppins.variable)}>
+    <div
+      className={cn(
+        "min-h-screen bg-gray-50 dark:bg-gray-900",
+        poppins.variable
+      )}
+    >
       <Sidebar
         isCollapsed={sidebarCollapsed}
         toggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
+      />
+      <Header
+        title={title}
+        setTitle={setTitle}
+        onSave={handleSave}
+        onDelete={() => setShowDeleteModal(true)}
+        onDownload={handleDownload}
+        isSaving={isSaving}
+        isDeleting={isDeleting}
+        sidebarCollapsed={sidebarCollapsed}
       />
 
       <div
@@ -163,33 +191,40 @@ function EditPageContent() {
         className="transition-all duration-300 flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900"
         style={{ marginLeft: sidebarCollapsed ? "60px" : "240px" }}
       >
-        <Header
-          title={title}
-          setTitle={setTitle}
-          onSave={handleSave}
-          onDelete={() => setShowDeleteModal(true)}
-          onDownload={handleDownload}
-          isSaving={isSaving}
-          isDeleting={isDeleting}
-        />
+        <main className="container mx-auto px-4 pt-20 pb-4 sm:py-8 sm:pt-24 flex-1 flex flex-col relative">
+          <div className="flex flex-col h-full">
+            {/* Page title and error message */}
+            <div className="mb-6">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white">
+                Edit Coloring Page
+              </h1>
+              {error && <ErrorMessage message={error} />}
+            </div>
 
-        <main className="container mx-auto px-4 py-4 sm:py-8 flex-1 flex flex-col">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-4 sm:mb-6">
-            Edit Coloring Page
-          </h1>
+            {/* Main content area with editor */}
+            <div className="flex-1 flex flex-col bg-white  rounded-lg shadow-lg overflow-hidden">
+              {/* Editor container with improved height */}
+              <div className="flex-1 p-4 sm:p-6">
+                <ImageEditor
+                  isLoading={isLoading}
+                  imageData={imageData}
+                  title={title}
+                  zoom={zoom}
+                  rotation={rotation}
+                  isPanning={isPanning}
+                />
+              </div>
+            </div>
 
-          {error && <ErrorMessage message={error} />}
-
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sm:p-6 flex-1">
-            <ImageEditor
-              isLoading={isLoading}
-              imageData={imageData}
-              title={title}
+            {/* Updated controls with zoom percentage and pan button */}
+            <ImageControls
+              onZoomIn={() => setZoom((prev) => Math.min(prev + 0.1, 2))}
+              onZoomOut={() => setZoom((prev) => Math.max(prev - 0.1, 0.5))}
+              onRotate={() => setRotation((prev) => prev + 90)}
+              onTogglePan={togglePanMode}
               zoom={zoom}
-              rotation={rotation}
-              onZoomIn={() => setZoom(prev => Math.min(prev + 0.1, 2))}
-              onZoomOut={() => setZoom(prev => Math.max(prev - 0.1, 0.5))}
-              onRotate={() => setRotation(prev => prev + 90)}
+              isPanning={isPanning}
+              sidebarCollapsed={sidebarCollapsed}
             />
           </div>
         </main>
@@ -209,12 +244,14 @@ function EditPageContent() {
 // Main page component with Suspense boundary
 export default function EditPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 dark:border-white"></div>
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900 dark:border-white"></div>
+        </div>
+      }
+    >
       <EditPageContent />
     </Suspense>
   );
-} 
+}

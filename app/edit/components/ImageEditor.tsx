@@ -1,7 +1,6 @@
-import { Loader2, ZoomIn, ZoomOut, RotateCw, Move } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface ImageEditorProps {
   isLoading: boolean;
@@ -9,172 +8,135 @@ interface ImageEditorProps {
   title: string;
   zoom: number;
   rotation: number;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onRotate: () => void;
+  isPanning?: boolean;
 }
 
-export default function ImageEditor({
+const ImageEditor: React.FC<ImageEditorProps> = ({
   isLoading,
   imageData,
   title,
   zoom,
   rotation,
-  onZoomIn,
-  onZoomOut,
-  onRotate,
-}: ImageEditorProps) {
-  const [isPanning, setIsPanning] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  isPanning = false,
+}) => {
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+  const [startPos, setStartPos] = useState({ x: 0, y: 0 });
+  const [isCurrentlyPanning, setIsCurrentlyPanning] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isPanning) return;
-    
-    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
-    
-    setIsDragging(true);
-    setDragStart({
-      x: clientX - position.x,
-      y: clientY - position.y
-    });
-
-    const container = containerRef.current;
-    if (container) {
-      container.style.cursor = 'grabbing';
-    }
-  };
-
-  const handleMouseMove = useCallback((e: MouseEvent | TouchEvent) => {
-    if (!isPanning || !isDragging) return;
-    
-    const clientX = 'touches' in e ? (e as TouchEvent).touches[0].clientX : (e as MouseEvent).clientX;
-    const clientY = 'touches' in e ? (e as TouchEvent).touches[0].clientY : (e as MouseEvent).clientY;
-    
-    setPosition({
-      x: clientX - dragStart.x,
-      y: clientY - dragStart.y
-    });
-  }, [isPanning, isDragging, dragStart]);
-
-  const handleMouseUp = useCallback(() => {
-    setIsDragging(false);
-    const container = containerRef.current;
-    if (container) {
-      container.style.cursor = isPanning ? 'grab' : 'default';
+  // Reset pan position when panning is disabled
+  useEffect(() => {
+    if (!isPanning) {
+      setIsCurrentlyPanning(false);
     }
   }, [isPanning]);
 
+  // Pan handlers with improved performance
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!isPanning || !imageData) return;
+
+    e.preventDefault(); // Prevent default browser drag behavior
+    setIsCurrentlyPanning(true);
+    setStartPos({
+      x: e.clientX - panPosition.x,
+      y: e.clientY - panPosition.y,
+    });
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isCurrentlyPanning || !isPanning || !imageData) return;
+
+    e.preventDefault(); // Prevent default browser behavior
+
+    // Use requestAnimationFrame for smoother updates
+    requestAnimationFrame(() => {
+      setPanPosition({
+        x: e.clientX - startPos.x,
+        y: e.clientY - startPos.y,
+      });
+    });
+  };
+
+  const handleMouseUp = (e: React.MouseEvent) => {
+    if (isCurrentlyPanning) {
+      e.preventDefault();
+      setIsCurrentlyPanning(false);
+    }
+  };
+
+  // Add global mouse up handler to ensure panning stops even if mouse is released outside the component
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+    const handleGlobalMouseUp = () => {
+      setIsCurrentlyPanning(false);
+    };
 
-    container.style.cursor = isPanning ? 'grab' : 'default';
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    window.addEventListener('touchmove', handleMouseMove);
-    window.addEventListener('touchend', handleMouseUp);
+    window.addEventListener("mouseup", handleGlobalMouseUp);
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-      window.removeEventListener('touchmove', handleMouseMove);
-      window.removeEventListener('touchend', handleMouseUp);
+      window.addEventListener("mouseup", handleGlobalMouseUp);
     };
-  }, [isPanning, isDragging, handleMouseMove, handleMouseUp]);
+  }, []);
+
+  // Determine the cursor style based on the current state
+  const getCursorStyle = () => {
+    if (!imageData) return "";
+    if (!isPanning) return "";
+    return isCurrentlyPanning ? "cursor-grabbing" : "cursor-grab";
+  };
 
   return (
-    <div className="relative w-full h-full">
-      {/* Image Container */}
-      <div 
-        ref={containerRef}
-        className="relative w-full h-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-700"
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleMouseDown}
-      >
-        {isLoading ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
-          </div>
-        ) : imageData ? (
-          <div className="relative w-full h-full flex items-center justify-center">
-            <div className="relative w-full h-full">
-              <Image
-                src={imageData}
-                alt={title}
-                className="object-contain transition-transform duration-300"
-                fill
-                unoptimized // Required for base64 images
-                priority // Load this image immediately
-                style={{
-                  transform: `translate(${position.x}px, ${position.y}px) scale(${zoom}) rotate(${rotation}deg)`,
-                  cursor: isPanning ? (isDragging ? 'grabbing' : 'grab') : 'default'
-                }}
-                draggable={false}
-              />
-            </div>
-          </div>
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="text-gray-400 dark:text-gray-500">No image available</p>
-          </div>
-        )}
-      </div>
-
-      {/* Controls */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 p-2 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-full shadow-lg">
-        <button
-          onClick={onZoomOut}
-          disabled={zoom <= 0.5}
-          className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
-          )}
-          title="Zoom Out"
-        >
-          <ZoomOut className="w-5 h-5" />
-        </button>
-        <div className="px-2 min-w-[3rem] text-center text-sm font-medium">
-          {Math.round(zoom * 100)}%
+    <div className="flex flex-col h-full">
+      {isLoading ? (
+        <div className="flex-1 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-800 dark:border-gray-200"></div>
         </div>
-        <button
-          onClick={onZoomIn}
-          disabled={zoom >= 2}
-          className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-            "disabled:opacity-50 disabled:cursor-not-allowed"
+      ) : (
+        <div
+          ref={containerRef}
+          className={`relative flex-1 my-4 flex items-center justify-center overflow-hidden ${getCursorStyle()}`}
+          style={{ minHeight: "60vh", touchAction: "none" }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          {imageData ? (
+            <div className="relative w-full h-full flex items-center justify-center">
+              <div
+                className="relative w-4/5"
+                style={{
+                  height: "700px",
+                  maxHeight: "50%",
+                }}
+              >
+                <Image
+                  src={imageData}
+                  alt={title || "Coloring page"}
+                  fill
+                  sizes="(max-width: 768px) 100vw, 800px"
+                  className="object-contain transition-transform"
+                  style={{
+                    transform: `scale(${zoom}) rotate(${rotation}deg) translate(${
+                      panPosition.x / zoom
+                    }px, ${panPosition.y / zoom}px)`,
+                    pointerEvents: isPanning ? "none" : "auto", // Prevent image from capturing events during panning
+                  }}
+                  unoptimized
+                  draggable="false"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-700 rounded-lg">
+              <p className="text-gray-500 dark:text-gray-400">
+                No image available
+              </p>
+            </div>
           )}
-          title="Zoom In"
-        >
-          <ZoomIn className="w-5 h-5" />
-        </button>
-        <div className="w-px h-6 bg-gray-300 dark:bg-gray-600 mx-1" />
-        <button
-          onClick={() => {
-            setIsPanning(!isPanning);
-            setIsDragging(false);
-            setPosition({ x: 0, y: 0 }); // Reset position when toggling pan mode
-          }}
-          className={cn(
-            "p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-            isPanning && "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400"
-          )}
-          title="Pan"
-        >
-          <Move className="w-5 h-5" />
-        </button>
-        <button
-          onClick={onRotate}
-          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          title="Rotate"
-        >
-          <RotateCw className="w-5 h-5" />
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
-} 
+};
+
+export default ImageEditor;

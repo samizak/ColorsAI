@@ -1,5 +1,6 @@
 import { ArrowLeft, Save, Trash2, Download, Share2 } from "lucide-react";
 
+// Add sidebarCollapsed to props
 interface HeaderProps {
   title: string;
   setTitle: (title: string) => void;
@@ -8,9 +9,10 @@ interface HeaderProps {
   onDownload: () => void;
   isSaving: boolean;
   isDeleting: boolean;
+  sidebarCollapsed: boolean;
 }
 
-export default function Header({
+const Header: React.FC<HeaderProps> = ({
   title,
   setTitle,
   onSave,
@@ -18,9 +20,16 @@ export default function Header({
   onDownload,
   isSaving,
   isDeleting,
-}: HeaderProps) {
+  sidebarCollapsed,
+}) => {
+  // Calculate the left margin based on sidebar state
+  const leftMargin = sidebarCollapsed ? "60px" : "240px";
+
   return (
-    <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
+    <header
+      className="fixed top-0 right-0 z-10 bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700"
+      style={{ left: leftMargin }}
+    >
       <div className="container mx-auto px-4">
         <div className="h-[56px] flex items-center justify-between gap-2 sm:gap-4">
           {/* Left section with back button and title */}
@@ -94,6 +103,8 @@ export default function Header({
           </div>
         </div>
       </div>
-    </div>
+    </header>
   );
-} 
+};
+
+export default Header;
