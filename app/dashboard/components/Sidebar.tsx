@@ -201,11 +201,13 @@ const Sidebar = ({
                   </div>
 
                   {/* Menu items */}
-                  <MenuLink
-                    href="/profile"
-                    icon={<User size={16} />}
-                    label="Your Profile"
-                  />
+                  <div className="w-full px-4 py-2 text-left text-sm text-gray-400 dark:text-gray-500 flex items-center justify-between cursor-not-allowed">
+                    <div className="flex items-center gap-2">
+                      <User size={16} />
+                      Your Profile
+                    </div>
+                    <span className="text-xs italic">Coming Soon</span>
+                  </div>
 
                   {/* Dark Mode Toggle */}
                   <div
@@ -219,11 +221,13 @@ const Sidebar = ({
                     <ThemeToggle isDarkMode={isDarkMode} />
                   </div>
 
-                  <MenuLink
-                    href="/settings"
-                    icon={<Settings size={16} />}
-                    label="Settings"
-                  />
+                  <div className="w-full px-4 py-2 text-left text-sm text-gray-400 dark:text-gray-500 flex items-center justify-between cursor-not-allowed">
+                    <div className="flex items-center gap-2">
+                      <Settings size={16} />
+                      Settings
+                    </div>
+                    <span className="text-xs italic">Coming Soon</span>
+                  </div>
 
                   <button
                     onClick={handleSignOut}
