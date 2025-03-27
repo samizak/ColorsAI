@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ColorAI - AI-Powered Coloring Page Generator
 
-## Getting Started
+ColorAI is an interactive web application that allows users to create, edit, and share coloring pages. Powered by AI, it transforms text descriptions or uploaded images into beautiful coloring pages that can be customized and printed.
 
-First, run the development server:
+![ColorAI](https://colormewithai.vercel.app/images/hero-image.png)
+
+## 🌐 Live Demo
+
+Visit the live application at [colormewithai.vercel.app](https://colormewithai.vercel.app)
+
+## ✨ Features
+
+- **AI-Powered Generation**: Create coloring pages from text descriptions
+- **Image Upload**: Convert your own images into coloring pages
+- **Edit & Customize**: Zoom, rotate, and pan to perfect your coloring pages
+- **User Dashboard**: Manage all your created coloring pages
+- **Gallery**: Browse and get inspired by community-created coloring pages
+- **Favorites**: Save coloring pages you love for easy access
+- **Dark Mode**: Comfortable viewing experience in any lighting condition
+
+## 🚀 Getting Started
+
+This is a [Next.js](https://nextjs.org) project. To run it locally:
 
 ```bash
+# Clone the repository
+git clone https://github.com/yourusername/word-blast.git
+cd word-blast
+
+# Install dependencies
+npm install
+
+# Run the development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000 in your browser to see the game in action.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Technologies Used
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Frontend**: Next.js 15, React 19, TailwindCSS 4
+- **Animation**: GSAP, Lenis for smooth scrolling
+- **State Management**: React Hooks, SWR for data fetching
+- **Authentication**: Supabase Auth
+- **Database**: Supabase
+- **Styling**: TailwindCSS with dark mode support
+- **Icons**: Lucide React
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+    coloring-image/
+    ├── app/                # Next.js app directory
+    │   ├── api/            # API routes
+    │   ├── auth/           # Authentication pages
+    │   ├── components/     # Shared components
+    │   ├── create/         # Page creation flows
+    │   ├── dashboard/      # User dashboard
+    │   ├── edit/           # Coloring page editor
+    │   ├── gallery/        # Community gallery
+    │   ├── hooks/          # Custom React hooks
+    │   └── services/       # API service functions
+    ├── components/         # Global UI components
+    │   ├── auth/           # Authentication components
+    │   ├── providers/      # Context providers
+    │   ├── sections/       # Page sections
+    │   └── ui/             # UI components
+    ├── lib/                # Utility functions
+    ├── public/             # Static assets
+    │   ├── images/         # Image assets
+    │   └── sounds/         # Sound assets
+    └── utils/              # Helper utilities
+    └── supabase/           # Supabase client utilities
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🤝 Contributing
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Contributions are welcome! If you'd like to contribute:
 
-## Deploy on Vercel
+1. Fork the repository
+2. Create a feature branch ( git checkout -b feature/amazing-feature )
+3. Commit your changes ( git commit -m 'Add some amazing feature' )
+4. Push to the branch ( git push origin feature/amazing-feature )
+5. Open a Pull Request
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 License
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is licensed under the MIT License - see the LICENSE file for details.
