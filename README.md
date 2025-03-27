@@ -2,7 +2,7 @@
 
 ColorAI is an interactive web application that allows users to create, edit, and share coloring pages. Powered by AI, it transforms text descriptions or uploaded images into beautiful coloring pages that can be customized and printed.
 
-![ColorAI](https://colormewithai.vercel.app/images/hero-image.png)
+<img src="public/colors-ai-preview.png" alt="ColorAI" width="100%" />
 
 ## 🌐 Live Demo
 
