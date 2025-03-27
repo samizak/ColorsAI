@@ -24,7 +24,7 @@ This is a [Next.js](https://nextjs.org) project. To run it locally:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/word-blast.git
+git clone https://github.com/samizak/ColorsAI.git
 cd word-blast
 
 # Install dependencies
