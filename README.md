@@ -46,6 +46,23 @@ Open http://localhost:3000 in your browser to see the game in action.
 - **Styling**: TailwindCSS with dark mode support
 - **Icons**: Lucide React
 
+## 🔐 Environment Variables
+
+To run this project, you'll need to set up the following environment variables in a `.env.local` file at the root of your project:
+
+### Required Variables:
+
+- `NEXT_PUBLIC_SUPABASE_URL`: Your Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Your Supabase anonymous key for client-side authentication
+- `GEMINI_API_KEY`: Google's Gemini API key for AI image generation
+
+To obtain these keys:
+
+1.  Create a Supabase project at [supabase.com](https://supabase.com)
+2.  Get a Gemini API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+
+⚠️ **Important**: Never commit your `.env.local` file to version control. It's already included in `.gitignore` to prevent accidental exposure of your API keys.
+
 ## 📁 Project Structure
 
     coloring-image/
