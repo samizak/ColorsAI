@@ -65,28 +65,30 @@ To obtain these keys:
 
 ## 📁 Project Structure
 
-    coloring-image/
-    ├── app/                # Next.js app directory
-    │   ├── api/            # API routes
-    │   ├── auth/           # Authentication pages
-    │   ├── components/     # Shared components
-    │   ├── create/         # Page creation flows
-    │   ├── dashboard/      # User dashboard
-    │   ├── edit/           # Coloring page editor
-    │   ├── gallery/        # Community gallery
-    │   ├── hooks/          # Custom React hooks
-    │   └── services/       # API service functions
-    ├── components/         # Global UI components
-    │   ├── auth/           # Authentication components
-    │   ├── providers/      # Context providers
-    │   ├── sections/       # Page sections
-    │   └── ui/             # UI components
-    ├── lib/                # Utility functions
-    ├── public/             # Static assets
-    │   ├── images/         # Image assets
-    │   └── sounds/         # Sound assets
-    └── utils/              # Helper utilities
-    └── supabase/           # Supabase client utilities
+```
+coloring-image/
+├── app/                # Next.js app directory
+│   ├── api/            # API routes
+│   ├── auth/           # Authentication pages
+│   ├── components/     # Shared components
+│   ├── create/         # Page creation flows
+│   ├── dashboard/      # User dashboard
+│   ├── edit/           # Coloring page editor
+│   ├── gallery/        # Community gallery
+│   ├── hooks/          # Custom React hooks
+│   └── services/       # API service functions
+├── components/         # Global UI components
+│   ├── auth/           # Authentication components
+│   ├── providers/      # Context providers
+│   ├── sections/       # Page sections
+│   └── ui/             # UI components
+├── lib/                # Utility functions
+├── public/             # Static assets
+│   ├── images/         # Image assets
+│   └── sounds/         # Sound assets
+└── utils/              # Helper utilities
+└── supabase/           # Supabase client utilities
+```
 
 ## 🤝 Contributing
 
